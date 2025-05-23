@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { OllamaService } from './ollama.service';
+import { JanusGraphService } from '../janusgraph/janusgraph.service';
 import { NetworkNode, NetworkEdge, GraphMetrics, TextNetworkAnalysis } from './types';
 
 // Re-export for backward compatibility
@@ -11,6 +12,7 @@ export class ZettelkastenService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ollamaService: OllamaService,
+    private readonly janusGraphService: JanusGraphService,
   ) {}
 
   async getAllNotes(): Promise<any[]> {
@@ -187,6 +189,100 @@ export class ZettelkastenService {
     }
 
     return importedNotes;
+  }
+
+  async storeNetworkInGraph(analysis: TextNetworkAnalysis): Promise<void> {
+    try {
+      const vertexMap = new Map();
+      
+      // Store nodes as vertices in JanusGraph
+      for (const node of analysis.nodes) {
+        try {
+          // Check if vertex already exists
+          let vertex = await this.janusGraphService.getVertexByProperty('conceptId', node.id, 'TextConcept');
+          
+          if (!vertex) {
+            // Create new vertex
+            vertex = await this.janusGraphService.createVertex('TextConcept', {
+              conceptId: node.id,
+              label: node.label,
+              size: node.size,
+              color: node.color,
+              betweenness: node.betweenness || 0,
+              community: node.community || 0
+            });
+          }
+          
+          if (vertex && vertex.id) {
+            vertexMap.set(node.id, vertex.id);
+          }
+        } catch (error) {
+          console.error(`Error creating vertex for concept ${node.id}:`, error);
+        }
+      }
+      
+      // Store edges as relationships
+      for (const edge of analysis.edges) {
+        try {
+          const sourceVertexId = vertexMap.get(edge.source);
+          const targetVertexId = vertexMap.get(edge.target);
+          
+          if (sourceVertexId && targetVertexId) {
+            await this.janusGraphService.createEdge(
+              sourceVertexId,
+              targetVertexId,
+              'CO_OCCURS',
+              { 
+                weight: edge.weight || 1,
+                label: edge.label || 'co-occurs'
+              }
+            );
+          }
+        } catch (error) {
+          console.error(`Error creating edge from ${edge.source} to ${edge.target}:`, error);
+        }
+      }
+      
+      console.log(`Stored network with ${analysis.nodes.length} nodes and ${analysis.edges.length} edges in JanusGraph`);
+    } catch (error) {
+      console.error('Error storing network in JanusGraph:', error);
+    }
+  }
+
+  async analyzeTextIncremental(text: string, previousAnalysis?: any): Promise<TextNetworkAnalysis> {
+    // Perform standard analysis
+    const analysis = await this.analyzeTextNetwork(text);
+    
+    // Store in JanusGraph for persistent knowledge building
+    await this.storeNetworkInGraph(analysis);
+    
+    // If there's previous analysis, we could merge or compare here
+    if (previousAnalysis) {
+      // Simple merge logic - combine unique nodes and edges
+      const combinedNodes = [...analysis.nodes];
+      const combinedEdges = [...analysis.edges];
+      
+      if (previousAnalysis.nodes) {
+        previousAnalysis.nodes.forEach((prevNode: NetworkNode) => {
+          if (!combinedNodes.find(n => n.id === prevNode.id)) {
+            combinedNodes.push(prevNode);
+          }
+        });
+      }
+      
+      if (previousAnalysis.edges) {
+        previousAnalysis.edges.forEach((prevEdge: NetworkEdge) => {
+          if (!combinedEdges.find(e => e.source === prevEdge.source && e.target === prevEdge.target)) {
+            combinedEdges.push(prevEdge);
+          }
+        });
+      }
+      
+      analysis.nodes = combinedNodes;
+      analysis.edges = combinedEdges;
+    }
+    
+    return analysis;
   }
 
   private preprocessText(text: string): string {

@@ -1,7 +1,7 @@
 {
   "name": "infrasyncus",
-  "version": "1.0.0",
-  "description": "InfraNodus-like text-to-network visualization platform with Zettelkasten capabilities",
+  "version": "2.0.0",
+  "description": "Advanced text-to-network visualization platform with JanusGraph knowledge graphs and Zettelkasten capabilities",
   "main": "electron-main.js",
   "homepage": "./",
   "scripts": {
@@ -20,7 +20,10 @@
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "janusgraph:start": "docker-compose -f docker-compose.janusgraph.yml up -d",
+    "janusgraph:stop": "docker-compose -f docker-compose.janusgraph.yml down",
+    "start:with-janusgraph": "./start-with-janusgraph.sh"
   },
   "build": {
     "appId": "com.infrasyncus.app",
@@ -34,15 +37,33 @@
       "backend/package.json",
       "backend/node_modules/**/*",
       "backend/prisma/**/*",
-      "backend/.env",
+      "backend/env.example",
       "backend/dev.db",
       "frontend/dist/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "docker-compose.janusgraph.yml",
+      "start-with-janusgraph.sh",
+      "JANUSGRAPH_SETUP.md",
+      "README.md",
+      "RELEASE_NOTES.md",
+      "INSTALLATION_GUIDE.md"
     ],
     "extraResources": [
       {
         "from": "backend/node_modules/.prisma",
         "to": "backend/node_modules/.prisma"
+      },
+      {
+        "from": "docker-compose.janusgraph.yml",
+        "to": "docker-compose.janusgraph.yml"
+      },
+      {
+        "from": "start-with-janusgraph.sh",
+        "to": "start-with-janusgraph.sh"
+      },
+      {
+        "from": "JANUSGRAPH_SETUP.md",
+        "to": "JANUSGRAPH_SETUP.md"
       }
     ],
     "mac": {
@@ -91,9 +112,26 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "dmg": {
+      "title": "InfraSyncus v2.0.0 - JanusGraph Edition",
+      "icon": "assets/icon.icns",
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
     }
   },
-  "keywords": ["text-analysis", "network-visualization", "zettelkasten", "knowledge-management"],
+  "keywords": ["text-analysis", "network-visualization", "zettelkasten", "knowledge-management", "janusgraph", "graph-database"],
   "author": "InfraSyncus Team",
   "license": "MIT",
   "devDependencies": {

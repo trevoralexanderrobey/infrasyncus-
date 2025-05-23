@@ -40,25 +40,41 @@ InfraSyncus is an advanced text analysis and knowledge management platform inspi
 ### Prerequisites
 - Node.js 18+
 - PostgreSQL database
-- (Optional) Neo4j for advanced graph storage
+- Docker (for JanusGraph)
 - (Optional) Ollama for AI features
 
-### 1. Clone and Install
+### Option 1: Quick Start with JanusGraph
+
 ```bash
+# Clone and setup
 git clone <repository-url>
 cd infrasyncus
 
-# Install root dependencies
-npm install
-
-# Install all dependencies (frontend + backend)
-npm run install-all
+# Start JanusGraph and the application
+./start-with-janusgraph.sh
 ```
 
-### 2. Database Setup
-Create a PostgreSQL database and set up environment variables:
+### Option 2: Manual Setup
 
-**Backend Environment (create `backend/.env`):**
+1. **Install Dependencies**
+```bash
+npm install
+cd backend && npm install
+cd ../frontend && npm install
+cd ..
+```
+
+2. **Start JanusGraph (Graph Database)**
+```bash
+# Using Docker Compose
+docker-compose -f docker-compose.janusgraph.yml up -d
+
+# Or manually download and run JanusGraph
+# See JANUSGRAPH_SETUP.md for detailed instructions
+```
+
+3. **Configure Environment**
+Create `backend/.env`:
 ```env
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5432/infrasyncus"
@@ -69,19 +85,18 @@ JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 # Zettelkasten
 ZETTELKASTEN_PASSWORD="your-zettelkasten-password"
 
-# Neo4j (optional)
-NEO4J_URI="bolt://localhost:7687"
-NEO4J_USERNAME="neo4j"
-NEO4J_PASSWORD="password"
+# JanusGraph Configuration
+JANUSGRAPH_HOST="localhost"
+JANUSGRAPH_PORT="8182"
 ```
 
-### 3. Initialize Database
+4. **Initialize Database**
 ```bash
 cd backend
 npx prisma db push
 ```
 
-### 4. Start the Application
+5. **Start the Application**
 ```bash
 # From root directory
 npm start
@@ -89,7 +104,8 @@ npm start
 
 The application will be available at:
 - Frontend: http://localhost:5173
-- Backend: http://localhost:3000
+- Backend API: http://localhost:3001
+- JanusGraph Gremlin Server: http://localhost:8182
 
 ## 📖 Usage Guide
 
@@ -126,7 +142,7 @@ backend/
 │   │   ├── zettelkasten.controller.ts
 │   │   └── ollama.service.ts        # AI integration
 │   ├── auth/               # Authentication
-│   ├── neo4j/             # Graph database integration
+│   ├── janusgraph/        # Graph database integration
 │   ├── text-processing/   # Text analysis utilities
 │   └── prisma/            # Database management
 └── prisma/
@@ -235,6 +251,34 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **Note**: This is an open-source implementation inspired by InfraNodus. For production use, please ensure you have proper environment variables and security configurations.
+
+## 📦 v2.0.0 - Pre-built Releases
+
+### Download Options
+
+The latest v2.0.0 JanusGraph Edition is available as pre-built packages:
+
+#### 🍎 macOS Downloads
+- **InfraSyncus-2.0.0-arm64.dmg** - Apple Silicon (M1/M2/M3) Macs
+- **InfraSyncus-2.0.0.dmg** - Intel Macs  
+- **InfraSyncus-2.0.0-arm64-mac.zip** - Apple Silicon (Portable)
+- **InfraSyncus-2.0.0-mac.zip** - Intel Mac (Portable)
+
+#### 🎯 New in v2.0.0
+- **JanusGraph Integration** - Advanced graph database capabilities
+- **Enhanced Performance** - Better handling of large knowledge graphs
+- **Docker Support** - Easy JanusGraph setup with Docker Compose
+- **Improved UI** - Better graph visualization and user experience
+- **Persistent Graphs** - Knowledge graphs that persist across sessions
+
+#### ⚡ Quick Start with Pre-built App
+1. **Download** the appropriate package for your Mac
+2. **Install** using the DMG installer or extract the ZIP
+3. **Launch** InfraSyncus from Applications
+4. **Start analyzing** text immediately!
+5. **Optional**: Set up JanusGraph for advanced features
+
+For detailed installation instructions, see `INSTALLATION_GUIDE.md` included with the app.
 
 ## Installation Guide
 

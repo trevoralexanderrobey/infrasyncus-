@@ -1,6 +1,7 @@
-const { app, BrowserWindow, shell, dialog } = require('electron');
+const { app, BrowserWindow, shell, dialog, Menu } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const fs = require('fs');
 const isDev = process.env.NODE_ENV === 'development';
 
 let mainWindow;
@@ -167,9 +168,62 @@ function startFrontend() {
   });
 }
 
+function createApplicationMenu() {
+  const template = [
+    {
+      label: 'InfraSyncus',
+      submenu: [
+        {
+          label: 'About InfraSyncus v2.0.0',
+          click: () => {
+            dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: 'About InfraSyncus',
+              message: 'InfraSyncus v2.0.0 - JanusGraph Edition',
+              detail: 'Advanced text-to-network visualization platform with JanusGraph knowledge graphs and Zettelkasten capabilities.\n\nFeatures:\n• Advanced Text Network Analysis\n• JanusGraph Graph Database\n• Knowledge Graph Visualization\n• Zettelkasten System\n• Real-time Analysis\n\nFor more information, visit the Help menu.'
+            });
+          }
+        },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'JanusGraph Setup Guide',
+          click: () => {
+            const setupPath = path.join(__dirname, 'JANUSGRAPH_SETUP.md');
+            if (fs.existsSync(setupPath)) {
+              shell.openPath(setupPath);
+            } else {
+              dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: 'JanusGraph Setup',
+                message: 'JanusGraph Setup Guide',
+                detail: 'To set up JanusGraph:\n\n1. Install Docker\n2. Run: docker-compose -f docker-compose.janusgraph.yml up -d\n3. Wait for JanusGraph to start\n4. Restart the application\n\nFor detailed instructions, see the documentation.'
+              });
+            }
+          }
+        },
+        {
+          label: 'Documentation',
+          click: () => {
+            shell.openExternal('https://github.com/your-repo/infrasyncus');
+          }
+        }
+      ]
+    }
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
 async function initializeApp() {
   try {
-    console.log('Initializing InfraSyncus...');
+    console.log('Initializing InfraSyncus v2.0.0 - JanusGraph Edition...');
     
     // Start backend first
     await startBackend();
@@ -186,14 +240,27 @@ async function initializeApp() {
     // Create the main window
     createWindow();
     
-    console.log('InfraSyncus initialized successfully!');
+    // Create application menu
+    createApplicationMenu();
+    
+    console.log('InfraSyncus v2.0.0 initialized successfully!');
+    console.log('Features available:');
+    console.log('• Text Network Analysis');
+    console.log('• JanusGraph Graph Database (optional)');
+    console.log('• Knowledge Graph Visualization');
+    console.log('• Zettelkasten System');
+    console.log('');
+    console.log('To enable JanusGraph features:');
+    console.log('1. Install Docker');
+    console.log('2. Run: docker-compose -f docker-compose.janusgraph.yml up -d');
+    console.log('3. Access Help > JanusGraph Setup Guide for detailed instructions');
     
   } catch (error) {
     console.error('Failed to initialize InfraSyncus:', error);
     
     dialog.showErrorBox(
       'Startup Error', 
-      `Failed to start InfraSyncus: ${error.message}\n\nPlease check the console for more details.`
+      `Failed to start InfraSyncus v2.0.0: ${error.message}\n\nPlease check the console for more details.`
     );
     
     app.quit();
