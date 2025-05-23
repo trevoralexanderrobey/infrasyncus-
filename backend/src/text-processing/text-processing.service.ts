@@ -18,6 +18,11 @@ export class TextProcessingService {
   constructor(private readonly janusGraphService: JanusGraphService) {}
 
   async processTextToNetwork(text: string): Promise<{ nodes: Node[]; edges: Edge[] }> {
+    // Handle null, undefined, or empty input
+    if (!text || typeof text !== 'string') {
+      return { nodes: [], edges: [] };
+    }
+    
     // Basic text processing to extract concepts and relationships
     const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 2);
     const uniqueWords = [...new Set(words)];
