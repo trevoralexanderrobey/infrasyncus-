@@ -5,7 +5,6 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './prisma/prisma.service';
 import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
-import { Neo4jModule } from './neo4j/neo4j.module';
 import { TextProcessingModule } from './text-processing/text-processing.module';
 
 @Module({
@@ -17,10 +16,9 @@ import { TextProcessingModule } from './text-processing/text-processing.module';
       signOptions: { expiresIn: '1d' },
     }),
     AiModule,
-    Neo4jModule,
     TextProcessingModule
   ],
   controllers: [AuthController],
   providers: [PrismaService, AuthService],
-}
+})
 export class AppModule {}

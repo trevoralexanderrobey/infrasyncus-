@@ -19,44 +19,77 @@ let ZettelkastenController = class ZettelkastenController {
     constructor(zettelkastenService) {
         this.zettelkastenService = zettelkastenService;
     }
-    async createNote(content, password) {
+    async getAllNotes(password) {
         if (password !== process.env.ZETTELKASTEN_PASSWORD) {
-            throw new UnauthorizedException('Invalid password');
+            throw new common_1.UnauthorizedException('Invalid password');
         }
-        return this.zettelkastenService.createAtomicNote(content);
+        return this.zettelkastenService.getAllNotes();
+    }
+    async createNote(content, tags, password, createdAt) {
+        if (password !== process.env.ZETTELKASTEN_PASSWORD) {
+            throw new common_1.UnauthorizedException('Invalid password');
+        }
+        return this.zettelkastenService.createAtomicNote(content, tags, createdAt);
     }
     async createLink(noteId1, noteId2, password) {
         if (password !== process.env.ZETTELKASTEN_PASSWORD) {
-            throw new UnauthorizedException('Invalid password');
+            throw new common_1.UnauthorizedException('Invalid password');
         }
         return this.zettelkastenService.createBidirectionalLink(noteId1, noteId2);
     }
     async getConnections(noteId, password) {
         if (password !== process.env.ZETTELKASTEN_PASSWORD) {
-            throw new UnauthorizedException('Invalid password');
+            throw new common_1.UnauthorizedException('Invalid password');
         }
         return this.zettelkastenService.getConnectedNotes(noteId);
     }
     async getGraph(noteId, password) {
         if (password !== process.env.ZETTELKASTEN_PASSWORD) {
-            throw new UnauthorizedException('Invalid password');
+            throw new common_1.UnauthorizedException('Invalid password');
         }
         return this.zettelkastenService.visualizeKnowledgeGraph(noteId);
     }
     async getSuggestions(noteId, password) {
         if (password !== process.env.ZETTELKASTEN_PASSWORD) {
-            throw new UnauthorizedException('Invalid password');
+            throw new common_1.UnauthorizedException('Invalid password');
         }
         return this.zettelkastenService.suggestRelatedNotes(noteId);
+    }
+    async analyzeText(text, password) {
+        if (password !== process.env.ZETTELKASTEN_PASSWORD) {
+            throw new common_1.UnauthorizedException('Invalid password');
+        }
+        return this.zettelkastenService.analyzeTextNetwork(text);
+    }
+    async analyzeTextIncremental(text, previousAnalysis, password) {
+        if (password !== process.env.ZETTELKASTEN_PASSWORD) {
+            throw new common_1.UnauthorizedException('Invalid password');
+        }
+        return this.zettelkastenService.analyzeTextNetwork(text);
+    }
+    async importFile(content, fileName, password) {
+        if (password !== process.env.ZETTELKASTEN_PASSWORD) {
+            throw new common_1.UnauthorizedException('Invalid password');
+        }
+        return this.zettelkastenService.importFromFile(content, fileName);
     }
 };
 exports.ZettelkastenController = ZettelkastenController;
 __decorate([
+    (0, common_1.Get)('notes'),
+    __param(0, (0, common_1.Query)('password')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], ZettelkastenController.prototype, "getAllNotes", null);
+__decorate([
     (0, common_1.Post)('notes'),
     __param(0, (0, common_1.Body)('content')),
-    __param(1, (0, common_1.Body)('password')),
+    __param(1, (0, common_1.Body)('tags')),
+    __param(2, (0, common_1.Body)('password')),
+    __param(3, (0, common_1.Body)('createdAt')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:paramtypes", [String, Array, String, String]),
     __metadata("design:returntype", Promise)
 ], ZettelkastenController.prototype, "createNote", null);
 __decorate([
@@ -71,7 +104,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('notes/:id/connections'),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, Query('password')),
+    __param(1, (0, common_1.Query)('password')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
@@ -79,7 +112,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('notes/:id/graph'),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, Query('password')),
+    __param(1, (0, common_1.Query)('password')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
@@ -87,11 +120,37 @@ __decorate([
 __decorate([
     (0, common_1.Get)('notes/:id/suggestions'),
     __param(0, (0, common_1.Param)('id')),
-    __param(1, Query('password')),
+    __param(1, (0, common_1.Query)('password')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], ZettelkastenController.prototype, "getSuggestions", null);
+__decorate([
+    (0, common_1.Post)('text/analyze'),
+    __param(0, (0, common_1.Body)('text')),
+    __param(1, (0, common_1.Body)('password')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
+], ZettelkastenController.prototype, "analyzeText", null);
+__decorate([
+    (0, common_1.Post)('text/analyze-incremental'),
+    __param(0, (0, common_1.Body)('text')),
+    __param(1, (0, common_1.Body)('previousAnalysis')),
+    __param(2, (0, common_1.Body)('password')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object, String]),
+    __metadata("design:returntype", Promise)
+], ZettelkastenController.prototype, "analyzeTextIncremental", null);
+__decorate([
+    (0, common_1.Post)('import/file'),
+    __param(0, (0, common_1.Body)('content')),
+    __param(1, (0, common_1.Body)('fileName')),
+    __param(2, (0, common_1.Body)('password')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", Promise)
+], ZettelkastenController.prototype, "importFile", null);
 exports.ZettelkastenController = ZettelkastenController = __decorate([
     (0, common_1.Controller)('zettelkasten'),
     __metadata("design:paramtypes", [zettelkasten_service_1.ZettelkastenService])

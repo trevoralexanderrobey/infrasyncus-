@@ -9,13 +9,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AiModule = void 0;
 const common_1 = require("@nestjs/common");
 const ollama_service_1 = require("./ollama.service");
+const zettelkasten_module_1 = require("./zettelkasten.module");
 let AiModule = class AiModule {
 };
 exports.AiModule = AiModule;
 exports.AiModule = AiModule = __decorate([
     (0, common_1.Module)({
+        imports: [zettelkasten_module_1.ZettelkastenModule],
         providers: [ollama_service_1.OllamaService],
-        exports: [ollama_service_1.OllamaService]
+        exports: [ollama_service_1.OllamaService, zettelkasten_module_1.ZettelkastenModule]
     })
 ], AiModule);
 //# sourceMappingURL=ai.module.js.map

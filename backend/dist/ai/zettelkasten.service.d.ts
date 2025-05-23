@@ -1,10 +1,30 @@
-import { Repository } from 'typeorm';
-import { Note } from './entities/note.entity';
-import { Link } from './entities/link.entity';
+import { PrismaService } from '../prisma/prisma.service';
 import { OllamaService } from './ollama.service';
+import { TextNetworkAnalysis } from './types';
+export { NetworkNode, NetworkEdge, GraphMetrics, TextNetworkAnalysis } from './types';
 export declare class ZettelkastenService {
-    private noteRepository;
-    private linkRepository;
+    private readonly prisma;
     private readonly ollamaService;
-    constructor(noteRepository: Repository<Note>, linkRepository: Repository<Link>, ollamaService: OllamaService);
+    constructor(prisma: PrismaService, ollamaService: OllamaService);
+    getAllNotes(): Promise<any[]>;
+    createAtomicNote(content: string, tags?: string[], createdAt?: string): Promise<any>;
+    createBidirectionalLink(noteId1: string, noteId2: string): Promise<any>;
+    getConnectedNotes(noteId: string): Promise<any[]>;
+    visualizeKnowledgeGraph(noteId: string): Promise<any>;
+    suggestRelatedNotes(noteId: string): Promise<string[]>;
+    analyzeTextNetwork(text: string): Promise<TextNetworkAnalysis>;
+    importFromFile(content: string, fileName: string): Promise<any[]>;
+    private preprocessText;
+    private extractWords;
+    private lemmatize;
+    private generateNGrams;
+    private buildNetwork;
+    private detectCommunities;
+    private assignCommunity;
+    private extractTopics;
+    private identifyContentGaps;
+    private extractKeyTerms;
+    private calculateDiversity;
+    private generateInsights;
+    private getRandomColor;
 }

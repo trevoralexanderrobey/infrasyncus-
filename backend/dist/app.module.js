@@ -14,7 +14,6 @@ const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("./prisma/prisma.service");
 const auth_service_1 = require("./auth/auth.service");
 const auth_controller_1 = require("./auth/auth.controller");
-const neo4j_module_1 = require("./neo4j/neo4j.module");
 const text_processing_module_1 = require("./text-processing/text-processing.module");
 let AppModule = class AppModule {
 };
@@ -29,7 +28,6 @@ exports.AppModule = AppModule = __decorate([
                 signOptions: { expiresIn: '1d' },
             }),
             ai_module_1.AiModule,
-            neo4j_module_1.Neo4jModule,
             text_processing_module_1.TextProcessingModule
         ],
         controllers: [auth_controller_1.AuthController],

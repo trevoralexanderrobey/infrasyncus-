@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Note } from './entities/note.entity';
-import { Link } from './entities/link.entity';
 import { ZettelkastenService } from './zettelkasten.service';
 import { ZettelkastenController } from './zettelkasten.controller';
+import { PrismaService } from '../prisma/prisma.service';
+import { OllamaService } from './ollama.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Note, Link])],
-  providers: [ZettelkastenService],
+  providers: [ZettelkastenService, PrismaService, OllamaService],
   controllers: [ZettelkastenController],
   exports: [ZettelkastenService]
 })

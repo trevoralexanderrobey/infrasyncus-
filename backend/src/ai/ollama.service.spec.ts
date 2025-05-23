@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OllamaService } from './ollama.service';
+import axios from 'axios';
+
+// Mock axios
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('OllamaService', () => {
   let service: OllamaService;
