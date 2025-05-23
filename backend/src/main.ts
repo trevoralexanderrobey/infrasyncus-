@@ -5,9 +5,10 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Enable CORS for frontend
+  // Enable CORS for frontend - configurable via environment variable
+  const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
   app.enableCors({
-    origin: 'http://localhost:5173', // Vite default port
+    origin: corsOrigin,
     credentials: true,
   });
   
@@ -17,8 +18,9 @@ async function bootstrap() {
   // Enable validation pipes
   app.useGlobalPipes(new ValidationPipe());
   
-  await app.listen(3001);
-  console.log(`Application is running on: http://localhost:3001`);
+  await app.listen(3000);
+  console.log(`Application is running on: http://localhost:3000`);
+  console.log(`CORS enabled for origin: ${corsOrigin}`);
 }
 
 bootstrap();
