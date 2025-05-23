@@ -18,6 +18,8 @@
     "electron:dist": "npm run build && electron-builder --publish=never",
     "dist": "npm run build && electron-builder --publish=never",
     "dist:mac": "npm run build && electron-builder --mac",
+    "dist:mac-dmg": "npm run build && electron-builder --mac --config.mac.target.0.target=dmg",
+    "dist:mac-arm64-dmg": "npm run build && electron-builder --mac --config.mac.target=dmg --config.mac.target.arch=arm64",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
     "postinstall": "electron-builder install-app-deps",
@@ -77,8 +79,7 @@
           "target": "zip",
           "arch": ["x64", "arm64"]
         }
-      ],
-      "icon": "assets/icon.icns"
+      ]
     },
     "win": {
       "target": [
@@ -115,7 +116,6 @@
     },
     "dmg": {
       "title": "InfraSyncus v2.0.0 - JanusGraph Edition",
-      "icon": "assets/icon.icns",
       "contents": [
         {
           "x": 410,

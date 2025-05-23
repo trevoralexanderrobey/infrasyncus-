@@ -3,10 +3,19 @@
 ## 📦 Available Downloads
 
 ### For macOS Users:
-- **InfraSyncus-2.0.0-mac.zip** (99 MB) - Intel Macs
-- **InfraSyncus-2.0.0-arm64-mac.zip** (94 MB) - Apple Silicon (M1/M2/M3) Macs
+- **InfraSyncus-2.0.0.dmg** (102 MB) - Intel Macs *(Recommended)*
+- **InfraSyncus-2.0.0-arm64.dmg** (98 MB) - Apple Silicon (M1/M2/M3) Macs *(Recommended)*
+- **InfraSyncus-2.0.0-mac.zip** (99 MB) - Intel Macs *(Alternative)*
+- **InfraSyncus-2.0.0-arm64-mac.zip** (94 MB) - Apple Silicon Macs *(Alternative)*
 
 ### Installation:
+#### **DMG Installation (Recommended):**
+1. Download the appropriate DMG file for your Mac
+2. Double-click the DMG file to mount it
+3. Drag `InfraSyncus.app` to your Applications folder
+4. Launch from Applications
+
+#### **ZIP Installation (Alternative):**
 1. Download the appropriate ZIP file for your Mac
 2. Extract the ZIP file
 3. Move `InfraSyncus.app` to your Applications folder
