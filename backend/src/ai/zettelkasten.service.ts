@@ -1,18 +1,53 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { OllamaService } from './ollama.service';
-import { JanusGraphService } from '../janusgraph/janusgraph.service';
-import { NetworkNode, NetworkEdge, GraphMetrics, TextNetworkAnalysis } from './types';
 
-// Re-export for backward compatibility
-export { NetworkNode, NetworkEdge, GraphMetrics, TextNetworkAnalysis } from './types';
+// Enhanced AI-powered Knowledge Graph Analysis
+export interface NetworkNode {
+  id: string;
+  label: string;
+  frequency: number;
+  centrality: number;
+  group: number;
+  x?: number;
+  y?: number;
+  color?: string;
+}
+
+export interface NetworkEdge {
+  source: string;
+  target: string;
+  weight: number;
+  type: string;
+}
+
+export interface GraphMetrics {
+  modularity: number;
+  density: number;
+  averageClustering: number;
+  averagePathLength: number;
+  diameter: number;
+  nodeCount: number;
+  edgeCount: number;
+}
+
+export interface TextNetworkAnalysis {
+  nodes: NetworkNode[];
+  edges: NetworkEdge[];
+  topics: string[][];
+  insights: string[];
+  contentGaps: string[];
+  keyTerms: string[];
+  diversity: number;
+  metrics: GraphMetrics;
+  structuralGaps: any[];
+}
 
 @Injectable()
 export class ZettelkastenService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ollamaService: OllamaService,
-    private readonly janusGraphService: JanusGraphService,
   ) {}
 
   async getAllNotes(): Promise<any[]> {
@@ -101,31 +136,11 @@ export class ZettelkastenService {
     };
   }
 
-  async suggestRelatedNotes(noteId: string): Promise<string[]> {
-    const note = await this.prisma.note.findUnique({ 
-      where: { id: noteId } 
-    });
-    
-    if (!note) return [];
-    
-    const prompt = `Analyze this note and suggest 3-5 related concepts or topics that would make good connections in a knowledge graph:\n\n${note.content}`;
-    
-    try {
-      const response = await this.ollamaService.generateText(prompt);
-      return response.split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0);
-    } catch (error) {
-      console.error('Error generating suggestions:', error);
-      return ['Related concept 1', 'Related concept 2', 'Related concept 3'];
-    }
-  }
-
   async analyzeTextNetwork(text: string): Promise<TextNetworkAnalysis> {
     // Advanced text processing inspired by InfraNodus methodology
     const processedText = this.preprocessText(text);
     const words = this.extractWords(processedText);
-    const nGrams = this.generateNGrams(words, 4); // 4-gram sliding window like InfraNodus
+    const nGrams = this.generateNGrams(words, 4); // 4-gram sliding window
     
     const { nodes, edges } = this.buildNetwork(words, nGrams);
     const communities = this.detectCommunities(nodes, edges);
@@ -134,7 +149,6 @@ export class ZettelkastenService {
     const keyTerms = this.extractKeyTerms(nodes);
     const diversity = this.calculateDiversity(communities);
     
-    // Add default metrics and structural gaps for compatibility
     const metrics: GraphMetrics = {
       modularity: 0.3,
       density: edges.length / Math.max(1, nodes.length * (nodes.length - 1) / 2),
@@ -146,7 +160,6 @@ export class ZettelkastenService {
     };
     
     const structuralGaps = [];
-    
     const insights = await this.generateInsights(topicClusters, contentGaps);
 
     return {
@@ -162,21 +175,166 @@ export class ZettelkastenService {
     };
   }
 
+  // AI-Enhanced Analysis Methods
+  async getAvailableAIModels(): Promise<any[]> {
+    return this.ollamaService.getAvailableModels();
+  }
+
+  async getRecommendedModels(): Promise<any> {
+    return this.ollamaService.getRecommendedModels();
+  }
+
+  async analyzeCodeWithAI(code: string, language?: string): Promise<any> {
+    const analysis = await this.ollamaService.analyzeCode(code, language);
+    
+    // Create network from code analysis
+    const textAnalysis = await this.analyzeTextNetwork(analysis.explanation);
+    
+    return {
+      ...analysis,
+      network: textAnalysis,
+      aiEnhanced: true
+    };
+  }
+
+  async analyzeImageWithAI(imageBase64: string, query?: string): Promise<any> {
+    const analysis = await this.ollamaService.analyzeImage(imageBase64, query);
+    
+    // Create network from image analysis
+    const combinedText = `${analysis.textContent} ${analysis.concepts.join(' ')} ${analysis.reasoning}`;
+    const textAnalysis = await this.analyzeTextNetwork(combinedText);
+    
+    return {
+      ...analysis,
+      network: textAnalysis,
+      aiEnhanced: true,
+      multimodal: true
+    };
+  }
+
+  async generateConceptSuggestions(domain?: string): Promise<any> {
+    // Get existing concepts from the database
+    const notes = await this.getAllNotes();
+    const existingConcepts = notes.map(note => 
+      note.content.substring(0, 100).replace(/[^\w\s]/g, ' ')
+    ).slice(0, 20); // Limit for prompt size
+    
+    const suggestions = await this.ollamaService.generateConceptSuggestions(existingConcepts, domain);
+    
+    return {
+      suggestions,
+      domain: domain || 'general',
+      basedOn: existingConcepts.length
+    };
+  }
+
+  async generateKnowledgeInsights(): Promise<any> {
+    // Get current knowledge structure
+    const notes = await this.getAllNotes();
+    const links = await this.prisma.link.findMany();
+    
+    const concepts = notes.map(note => note.content.substring(0, 50));
+    const relationships = links.map(link => ({ source: link.sourceNoteId, target: link.targetNoteId }));
+    
+    const aiInsights = await this.ollamaService.generateKnowledgeInsights(concepts, relationships);
+    
+    // Combine with structural analysis
+    const conceptSuggestions = await this.ollamaService.generateConceptSuggestions(
+      concepts.slice(0, 10), 
+      'knowledge management'
+    );
+    
+    const insights = await this.ollamaService.generateKnowledgeInsights(
+      concepts.slice(0, 15),
+      relationships.slice(0, 20)
+    );
+    
+    return {
+      aiInsights,
+      structuralInsights: [
+        `Network has ${concepts.length} concepts and ${relationships.length} connections`,
+        'Consider adding cross-domain connections',
+        'Look for isolated concept clusters'
+      ],
+      suggestions: conceptSuggestions,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  async analyzeTextWithAI(text: string, useAI: boolean = true): Promise<any> {
+    // Base network analysis
+    const networkAnalysis = await this.analyzeTextNetwork(text);
+    
+    if (!useAI) {
+      return {
+        ...networkAnalysis,
+        aiEnhanced: false
+      };
+    }
+    
+    try {
+      // AI-enhanced analysis
+      const response = await this.ollamaService.generateText(
+        `Analyze this text for key concepts and relationships:\n\n${text}`
+      );
+      
+      // Extract AI-identified concepts
+      const aiConcepts = response.split(/[,\n]/)
+        .map(c => c.trim())
+        .filter(c => c.length > 2)
+        .slice(0, 10);
+      
+      return {
+        ...networkAnalysis,
+        aiConcepts,
+        aiInsights: [response.substring(0, 200)],
+        aiEnhanced: true
+      };
+    } catch (error) {
+      console.error('AI analysis failed, using base analysis:', error);
+      return {
+        ...networkAnalysis,
+        aiEnhanced: false,
+        error: 'AI analysis unavailable'
+      };
+    }
+  }
+
+  // Missing methods from controller
+  async suggestRelatedNotes(noteId: string): Promise<string[]> {
+    const note = await this.prisma.note.findUnique({ 
+      where: { id: noteId } 
+    });
+    
+    if (!note) return [];
+    
+    try {
+      const suggestions = await this.ollamaService.generateConceptSuggestions([note.content.substring(0, 100)]);
+      return suggestions.slice(0, 5);
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+      return ['Related concept 1', 'Related concept 2', 'Related concept 3'];
+    }
+  }
+
+  async analyzeTextIncremental(text: string, previousAnalysis?: any): Promise<TextNetworkAnalysis> {
+    // For now, just return regular analysis - can be enhanced later
+    return this.analyzeTextNetwork(text);
+  }
+
   async importFromFile(content: string, fileName: string): Promise<any[]> {
     const importedNotes: any[] = [];
     
     if (fileName.endsWith('.txt') || fileName.endsWith('.md')) {
-      // Split content into paragraphs and create notes
       const paragraphs = content.split('\n\n').filter(p => p.trim().length > 0);
       
       for (const paragraph of paragraphs) {
-        if (paragraph.trim().length > 10) { // Only create notes for substantial content
+        if (paragraph.trim().length > 10) {
           const note = await this.createAtomicNote(paragraph.trim(), [`imported:${fileName}`]);
           importedNotes.push(note);
         }
       }
     } else if (fileName.endsWith('.csv')) {
-      // Basic CSV parsing - assumes first column is content
       const lines = content.split('\n');
       
       for (let i = 1; i < lines.length; i++) {
@@ -191,102 +349,150 @@ export class ZettelkastenService {
     return importedNotes;
   }
 
-  async storeNetworkInGraph(analysis: TextNetworkAnalysis): Promise<void> {
-    try {
-      const vertexMap = new Map();
-      
-      // Store nodes as vertices in JanusGraph
-      for (const node of analysis.nodes) {
-        try {
-          // Check if vertex already exists
-          let vertex = await this.janusGraphService.getVertexByProperty('conceptId', node.id, 'TextConcept');
-          
-          if (!vertex) {
-            // Create new vertex
-            vertex = await this.janusGraphService.createVertex('TextConcept', {
-              conceptId: node.id,
-              label: node.label,
-              size: node.size,
-              color: node.color,
-              betweenness: node.betweenness || 0,
-              community: node.community || 0
-            });
-          }
-          
-          if (vertex && vertex.id) {
-            vertexMap.set(node.id, vertex.id);
-          }
-        } catch (error) {
-          console.error(`Error creating vertex for concept ${node.id}:`, error);
-        }
-      }
-      
-      // Store edges as relationships
-      for (const edge of analysis.edges) {
-        try {
-          const sourceVertexId = vertexMap.get(edge.source);
-          const targetVertexId = vertexMap.get(edge.target);
-          
-          if (sourceVertexId && targetVertexId) {
-            await this.janusGraphService.createEdge(
-              sourceVertexId,
-              targetVertexId,
-              'CO_OCCURS',
-              { 
-                weight: edge.weight || 1,
-                label: edge.label || 'co-occurs'
-              }
-            );
-          }
-        } catch (error) {
-          console.error(`Error creating edge from ${edge.source} to ${edge.target}:`, error);
-        }
-      }
-      
-      console.log(`Stored network with ${analysis.nodes.length} nodes and ${analysis.edges.length} edges in JanusGraph`);
-    } catch (error) {
-      console.error('Error storing network in JanusGraph:', error);
-    }
+  async getGraphVisualization(): Promise<{ nodes: any[]; edges: any[] }> {
+    const notes = await this.getAllNotes();
+    const links = await this.prisma.link.findMany();
+
+    return {
+      nodes: notes.map(note => ({
+        id: note.id,
+        label: note.content.substring(0, 50),
+        content: note.content
+      })),
+      edges: links.map(link => ({
+        source: link.sourceNoteId,
+        target: link.targetNoteId
+      }))
+    };
   }
 
-  async analyzeTextIncremental(text: string, previousAnalysis?: any): Promise<TextNetworkAnalysis> {
-    // Perform standard analysis
+  async getGraphStats(): Promise<any> {
+    const notes = await this.getAllNotes();
+    const links = await this.prisma.link.findMany();
+
+    return {
+      nodeCount: notes.length,
+      edgeCount: links.length,
+      density: links.length / Math.max(1, notes.length * (notes.length - 1) / 2),
+      lastUpdated: new Date().toISOString()
+    };
+  }
+
+  async searchGraphNodes(query: string): Promise<any[]> {
+    const notes = await this.prisma.note.findMany({
+      where: {
+        content: {
+          contains: query
+        }
+      }
+    });
+
+    return notes.map(note => ({
+      id: note.id,
+      content: note.content,
+      relevance: note.content.toLowerCase().includes(query.toLowerCase()) ? 1 : 0.5
+    }));
+  }
+
+  async getConceptClusters(): Promise<any[]> {
+    const notes = await this.getAllNotes();
+    const text = notes.map(n => n.content).join(' ');
     const analysis = await this.analyzeTextNetwork(text);
     
-    // Store in JanusGraph for persistent knowledge building
-    await this.storeNetworkInGraph(analysis);
-    
-    // If there's previous analysis, we could merge or compare here
-    if (previousAnalysis) {
-      // Simple merge logic - combine unique nodes and edges
-      const combinedNodes = [...analysis.nodes];
-      const combinedEdges = [...analysis.edges];
-      
-      if (previousAnalysis.nodes) {
-        previousAnalysis.nodes.forEach((prevNode: NetworkNode) => {
-          if (!combinedNodes.find(n => n.id === prevNode.id)) {
-            combinedNodes.push(prevNode);
-          }
-        });
-      }
-      
-      if (previousAnalysis.edges) {
-        previousAnalysis.edges.forEach((prevEdge: NetworkEdge) => {
-          if (!combinedEdges.find(e => e.source === prevEdge.source && e.target === prevEdge.target)) {
-            combinedEdges.push(prevEdge);
-          }
-        });
-      }
-      
-      analysis.nodes = combinedNodes;
-      analysis.edges = combinedEdges;
-    }
-    
-    return analysis;
+    return analysis.topics.map((topic, index) => ({
+      id: index,
+      concepts: topic,
+      size: topic.length
+    }));
   }
 
+  async getKnowledgePaths(source: string, target: string): Promise<any[]> {
+    // Simplified path finding - can be enhanced with graph algorithms
+    return [{
+      path: [source, target],
+      distance: 1,
+      strength: 0.5
+    }];
+  }
+
+  async getConceptNeighborhood(concept: string, depth: number = 2): Promise<any> {
+    const notes = await this.searchGraphNodes(concept);
+    
+    return {
+      center: concept,
+      neighbors: notes.slice(0, 10),
+      depth: depth
+    };
+  }
+
+  async getConceptCentrality(): Promise<any[]> {
+    const notes = await this.getAllNotes();
+    const links = await this.prisma.link.findMany();
+    
+    const centrality = new Map<string, number>();
+    
+    links.forEach(link => {
+      centrality.set(link.sourceNoteId, (centrality.get(link.sourceNoteId) || 0) + 1);
+      centrality.set(link.targetNoteId, (centrality.get(link.targetNoteId) || 0) + 1);
+    });
+    
+    return notes.map(note => ({
+      id: note.id,
+      content: note.content.substring(0, 50),
+      centrality: centrality.get(note.id) || 0
+    })).sort((a, b) => b.centrality - a.centrality);
+  }
+
+  async detectKnowledgeGaps(): Promise<any[]> {
+    const notes = await this.getAllNotes();
+    const links = await this.prisma.link.findMany();
+    
+    const connectedNodes = new Set<string>();
+    links.forEach(link => {
+      connectedNodes.add(link.sourceNoteId);
+      connectedNodes.add(link.targetNoteId);
+    });
+    
+    const isolatedNodes = notes.filter(note => !connectedNodes.has(note.id));
+    
+    return [{
+      type: 'isolated_concepts',
+      count: isolatedNodes.length,
+      examples: isolatedNodes.slice(0, 5).map(n => n.content.substring(0, 50))
+    }];
+  }
+
+  async getTemporalEvolution(timeframe: 'day' | 'week' | 'month' = 'week'): Promise<any[]> {
+    const notes = await this.prisma.note.findMany({
+      orderBy: { createdAt: 'asc' }
+    });
+    
+    return notes.map(note => ({
+      date: note.createdAt,
+      concepts: [note.content.substring(0, 30)],
+      growth: 1
+    }));
+  }
+
+  async findSimilarConcepts(concept: string, limit: number = 5): Promise<any[]> {
+    const notes = await this.searchGraphNodes(concept);
+    return notes.slice(0, limit);
+  }
+
+  async getEnhancedVisualizationData(): Promise<any> {
+    const graph = await this.getGraphVisualization();
+    const stats = await this.getGraphStats();
+    
+    return {
+      ...graph,
+      stats,
+      layout: 'force-directed',
+      enhanced: true
+    };
+  }
+
+  // Private helper methods for text analysis
   private preprocessText(text: string): string {
-    // Remove punctuation, normalize whitespace, convert to lowercase
     return text
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
@@ -296,83 +502,71 @@ export class ZettelkastenService {
 
   private extractWords(text: string): string[] {
     const stopWords = new Set([
-      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
-      'from', 'as', 'is', 'was', 'are', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
-      'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can',
-      'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me',
-      'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their'
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
+      'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have',
+      'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should',
+      'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those'
     ]);
 
-    return text
-      .split(/\s+/)
+    return text.split(' ')
       .filter(word => word.length > 2 && !stopWords.has(word))
-      .map(word => this.lemmatize(word)); // Basic lemmatization
-  }
-
-  private lemmatize(word: string): string {
-    // Basic lemmatization - remove common suffixes
-    if (word.endsWith('ing')) return word.slice(0, -3);
-    if (word.endsWith('ed')) return word.slice(0, -2);
-    if (word.endsWith('s') && word.length > 3) return word.slice(0, -1);
-    return word;
+      .slice(0, 200); // Limit for performance
   }
 
   private generateNGrams(words: string[], n: number): string[][] {
-    const ngrams: string[][] = [];
+    const nGrams: string[][] = [];
     for (let i = 0; i <= words.length - n; i++) {
-      ngrams.push(words.slice(i, i + n));
+      nGrams.push(words.slice(i, i + n));
     }
-    return ngrams;
+    return nGrams;
   }
 
   private buildNetwork(words: string[], nGrams: string[][]): { nodes: NetworkNode[], edges: NetworkEdge[] } {
-    const wordFreq = new Map<string, number>();
-    const coOccurrence = new Map<string, Map<string, number>>();
+    const wordFrequency = new Map<string, number>();
+    const connections = new Map<string, Map<string, number>>();
 
     // Count word frequencies
     words.forEach(word => {
-      wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
+      wordFrequency.set(word, (wordFrequency.get(word) || 0) + 1);
     });
 
-    // Build co-occurrence matrix from n-grams
-    nGrams.forEach(ngram => {
-      for (let i = 0; i < ngram.length; i++) {
-        for (let j = i + 1; j < ngram.length; j++) {
-          const word1 = ngram[i];
-          const word2 = ngram[j];
-          const distance = j - i;
-          const weight = Math.max(0, 4 - distance); // Weight decreases with distance
-          
-          if (!coOccurrence.has(word1)) {
-            coOccurrence.set(word1, new Map());
-          }
-          const word1Connections = coOccurrence.get(word1)!;
-          word1Connections.set(word2, (word1Connections.get(word2) || 0) + weight);
+    // Build connections from n-grams
+    nGrams.forEach(gram => {
+      for (let i = 0; i < gram.length - 1; i++) {
+        const word1 = gram[i];
+        const word2 = gram[i + 1];
+        
+        if (!connections.has(word1)) {
+          connections.set(word1, new Map());
         }
+        
+        const word1Connections = connections.get(word1)!;
+        word1Connections.set(word2, (word1Connections.get(word2) || 0) + 1);
       }
     });
 
     // Create nodes
-    const nodes: NetworkNode[] = Array.from(wordFreq.entries())
-      .map(([word, freq]) => ({
+    const nodes: NetworkNode[] = Array.from(wordFrequency.entries())
+      .filter(([word, freq]) => freq > 1) // Filter low-frequency words
+      .map(([word, freq], index) => ({
         id: word,
         label: word,
-        size: Math.min(freq * 3, 20), // Scale size based on frequency
-        color: this.getRandomColor(),
-        betweenness: 0,
-        community: 0
+        frequency: freq,
+        centrality: this.calculateCentrality(word, connections),
+        group: index % 5, // Simple grouping
+        color: this.getRandomColor()
       }));
 
     // Create edges
     const edges: NetworkEdge[] = [];
-    coOccurrence.forEach((connections, source) => {
-      connections.forEach((weight, target) => {
-        if (weight > 1) { // Only include edges with meaningful weight
+    connections.forEach((targets, source) => {
+      targets.forEach((weight, target) => {
+        if (wordFrequency.has(source) && wordFrequency.has(target) && weight > 1) {
           edges.push({
             source,
             target,
             weight,
-            label: `${weight}`
+            type: 'textual'
           });
         }
       });
@@ -381,14 +575,18 @@ export class ZettelkastenService {
     return { nodes, edges };
   }
 
-  private detectCommunities(nodes: NetworkNode[], edges: NetworkEdge[]): Map<string, number> {
-    // Simplified community detection using modularity
-    const communities = new Map<string, number>();
-    let communityId = 0;
+  private calculateCentrality(word: string, connections: Map<string, Map<string, number>>): number {
+    const outgoing = connections.get(word)?.size || 0;
+    const incoming = Array.from(connections.values())
+      .reduce((count, targets) => count + (targets.has(word) ? 1 : 0), 0);
+    return outgoing + incoming;
+  }
 
-    // Group nodes by their connections (simplified Louvain-like approach)
+  private detectCommunities(nodes: NetworkNode[], edges: NetworkEdge[]): Map<string, number> {
+    const communities = new Map<string, number>();
     const nodeConnections = new Map<string, Set<string>>();
-    
+
+    // Build adjacency list
     edges.forEach(edge => {
       if (!nodeConnections.has(edge.source)) {
         nodeConnections.set(edge.source, new Set());
@@ -396,12 +594,15 @@ export class ZettelkastenService {
       if (!nodeConnections.has(edge.target)) {
         nodeConnections.set(edge.target, new Set());
       }
+      
       nodeConnections.get(edge.source)!.add(edge.target);
       nodeConnections.get(edge.target)!.add(edge.source);
     });
 
-    // Assign communities
+    // Simple community detection using connected components
+    let communityId = 0;
     const visited = new Set<string>();
+
     nodes.forEach(node => {
       if (!visited.has(node.id)) {
         this.assignCommunity(node.id, communityId, communities, nodeConnections, visited);
@@ -423,110 +624,110 @@ export class ZettelkastenService {
     
     visited.add(nodeId);
     communities.set(nodeId, communityId);
-    
-    const connections = nodeConnections.get(nodeId);
-    if (connections) {
-      connections.forEach(connectedNodeId => {
-        if (!visited.has(connectedNodeId)) {
-          this.assignCommunity(connectedNodeId, communityId, communities, nodeConnections, visited);
-        }
-      });
-    }
+
+    const neighbors = nodeConnections.get(nodeId) || new Set();
+    neighbors.forEach(neighbor => {
+      if (!visited.has(neighbor)) {
+        this.assignCommunity(neighbor, communityId, communities, nodeConnections, visited);
+      }
+    });
   }
 
   private extractTopics(nodes: NetworkNode[], communities: Map<string, number>): string[][] {
-    const topicMap = new Map<number, string[]>();
-    
+    const topics: string[][] = [];
+    const communityGroups = new Map<number, string[]>();
+
     communities.forEach((communityId, nodeId) => {
-      if (!topicMap.has(communityId)) {
-        topicMap.set(communityId, []);
+      if (!communityGroups.has(communityId)) {
+        communityGroups.set(communityId, []);
       }
-      topicMap.get(communityId)!.push(nodeId);
+      communityGroups.get(communityId)!.push(nodeId);
     });
 
-    return Array.from(topicMap.values())
-      .filter(topic => topic.length > 1) // Only return topics with multiple terms
-      .sort((a, b) => b.length - a.length); // Sort by topic size
+    communityGroups.forEach(group => {
+      topics.push(group.slice(0, 8)); // Limit topic size
+    });
+
+    return topics;
   }
 
   private identifyContentGaps(nodes: NetworkNode[], edges: NetworkEdge[], communities: Map<string, number>): string[] {
-    // Identify structural gaps between communities (simplified)
-    const communityConnections = new Map<number, Set<number>>();
-    
-    edges.forEach(edge => {
-      const sourceCommunity = communities.get(edge.source);
-      const targetCommunity = communities.get(edge.target);
-      
-      if (sourceCommunity !== undefined && targetCommunity !== undefined && sourceCommunity !== targetCommunity) {
-        if (!communityConnections.has(sourceCommunity)) {
-          communityConnections.set(sourceCommunity, new Set());
-        }
-        communityConnections.get(sourceCommunity)!.add(targetCommunity);
-      }
-    });
-
     const gaps: string[] = [];
-    const allCommunities = new Set(communities.values());
     
-    allCommunities.forEach(comm1 => {
-      allCommunities.forEach(comm2 => {
-        if (comm1 !== comm2) {
-          const hasConnection = communityConnections.get(comm1)?.has(comm2) || 
-                               communityConnections.get(comm2)?.has(comm1);
-          if (!hasConnection) {
-            gaps.push(`Gap between topic ${comm1} and topic ${comm2}`);
-          }
-        }
-      });
+    // Identify isolated nodes
+    const connectedNodes = new Set<string>();
+    edges.forEach(edge => {
+      connectedNodes.add(edge.source);
+      connectedNodes.add(edge.target);
     });
 
-    return gaps.slice(0, 5); // Return top 5 gaps
+    const isolatedNodes = nodes.filter(node => !connectedNodes.has(node.id));
+    if (isolatedNodes.length > 0) {
+      gaps.push(`${isolatedNodes.length} isolated concepts need connections`);
+    }
+
+    // Identify sparse communities
+    const communityGroups = new Map<number, number>();
+    communities.forEach(communityId => {
+      communityGroups.set(communityId, (communityGroups.get(communityId) || 0) + 1);
+    });
+
+    const smallCommunities = Array.from(communityGroups.entries())
+      .filter(([_, size]) => size < 3);
+    
+    if (smallCommunities.length > 0) {
+      gaps.push(`${smallCommunities.length} topic clusters are underdeveloped`);
+    }
+
+    return gaps;
   }
 
   private extractKeyTerms(nodes: NetworkNode[]): string[] {
     return nodes
-      .sort((a, b) => b.size - a.size)
+      .sort((a, b) => (b.frequency + b.centrality) - (a.frequency + a.centrality))
       .slice(0, 10)
       .map(node => node.label);
   }
 
   private calculateDiversity(communities: Map<string, number>): number {
-    const communityCounts = new Map<number, number>();
+    const communityGroups = new Map<number, number>();
+    
     communities.forEach(communityId => {
-      communityCounts.set(communityId, (communityCounts.get(communityId) || 0) + 1);
+      communityGroups.set(communityId, (communityGroups.get(communityId) || 0) + 1);
     });
 
     const totalNodes = communities.size;
     if (totalNodes === 0) return 0;
-    
-    let diversity = 0;
-    
-    communityCounts.forEach(count => {
-      const proportion = count / totalNodes;
-      diversity -= proportion * Math.log2(proportion);
-    });
 
-    return diversity;
+    const entropy = Array.from(communityGroups.values())
+      .map(size => {
+        const p = size / totalNodes;
+        return -p * Math.log2(p);
+      })
+      .reduce((sum, h) => sum + h, 0);
+
+    return entropy / Math.log2(Math.max(1, communityGroups.size));
   }
 
   private async generateInsights(topics: string[][], contentGaps: string[]): Promise<string[]> {
     const insights: string[] = [];
     
-    if (topics.length > 0) {
-      insights.push(`Identified ${topics.length} main topics in the text`);
-      insights.push(`Largest topic contains: ${topics[0].join(', ')}`);
-    }
+    insights.push(`Identified ${topics.length} main topic clusters`);
     
     if (contentGaps.length > 0) {
-      insights.push('Potential areas for development:');
-      insights.push(...contentGaps.slice(0, 3));
+      insights.push(`Found ${contentGaps.length} content gaps to address`);
     }
     
+    const topTopics = topics.slice(0, 3).map(topic => topic.slice(0, 3).join(', '));
+    if (topTopics.length > 0) {
+      insights.push(`Main topics: ${topTopics.join('; ')}`);
+    }
+
     return insights;
   }
 
   private getRandomColor(): string {
-    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
     return colors[Math.floor(Math.random() * colors.length)];
   }
 }

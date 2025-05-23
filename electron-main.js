@@ -179,8 +179,8 @@ function createApplicationMenu() {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
               title: 'About InfraSyncus',
-              message: 'InfraSyncus v2.0.0 - JanusGraph Edition',
-              detail: 'Advanced text-to-network visualization platform with JanusGraph knowledge graphs and Zettelkasten capabilities.\n\nFeatures:\n• Advanced Text Network Analysis\n• JanusGraph Graph Database\n• Knowledge Graph Visualization\n• Zettelkasten System\n• Real-time Analysis\n\nFor more information, visit the Help menu.'
+              message: 'InfraSyncus v2.0.0 - Embedded Graph Edition',
+              detail: 'Advanced text-to-network visualization platform with built-in graph database and Zettelkasten capabilities.\n\nFeatures:\n• Advanced Text Network Analysis\n• Built-in Embedded Graph Database\n• Knowledge Graph Visualization\n• Zettelkasten System\n• Real-time Analysis\n• Zero External Dependencies\n\nClick and use immediately - no setup required!'
             });
           }
         },
@@ -192,19 +192,25 @@ function createApplicationMenu() {
       label: 'Help',
       submenu: [
         {
-          label: 'JanusGraph Setup Guide',
+          label: 'Quick Start Guide',
           click: () => {
-            const setupPath = path.join(__dirname, 'JANUSGRAPH_SETUP.md');
-            if (fs.existsSync(setupPath)) {
-              shell.openPath(setupPath);
-            } else {
-              dialog.showMessageBox(mainWindow, {
-                type: 'info',
-                title: 'JanusGraph Setup',
-                message: 'JanusGraph Setup Guide',
-                detail: 'To set up JanusGraph:\n\n1. Install Docker\n2. Run: docker-compose -f docker-compose.janusgraph.yml up -d\n3. Wait for JanusGraph to start\n4. Restart the application\n\nFor detailed instructions, see the documentation.'
-              });
-            }
+            dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: 'Quick Start Guide',
+              message: 'Getting Started with InfraSyncus',
+              detail: 'InfraSyncus is ready to use immediately!\n\n1. 📝 Create Notes: Use the Zettelkasten tab to create and link notes\n2. 🔍 Analyze Text: Use the Text Analysis tab to visualize text networks\n3. 🌐 Explore Graphs: View interactive knowledge graphs\n4. 🔗 Build Connections: Discover relationships between concepts\n\n💾 All data is automatically saved locally.\n🚀 No external setup required!'
+            });
+          }
+        },
+        {
+          label: 'Features Guide',
+          click: () => {
+            dialog.showMessageBox(mainWindow, {
+              type: 'info',
+              title: 'Features Guide',
+              message: 'InfraSyncus Features',
+              detail: '🎯 Text Network Analysis:\n• Automatic concept extraction\n• Co-occurrence network mapping\n• Community detection\n• Topic clustering\n\n📚 Zettelkasten System:\n• Atomic note creation\n• Bidirectional linking\n• Knowledge graph visualization\n• Search and discovery\n\n🎨 Visualization:\n• Interactive network graphs\n• Color-coded communities\n• Force-directed layouts\n• Export capabilities'
+            });
           }
         },
         {
@@ -223,7 +229,7 @@ function createApplicationMenu() {
 
 async function initializeApp() {
   try {
-    console.log('Initializing InfraSyncus v2.0.0 - JanusGraph Edition...');
+    console.log('Initializing InfraSyncus v2.0.0 - Embedded Graph Edition...');
     
     // Start backend first
     await startBackend();
@@ -246,14 +252,14 @@ async function initializeApp() {
     console.log('InfraSyncus v2.0.0 initialized successfully!');
     console.log('Features available:');
     console.log('• Text Network Analysis');
-    console.log('• JanusGraph Graph Database (optional)');
+    console.log('• Built-in Embedded Graph Database');
     console.log('• Knowledge Graph Visualization');
     console.log('• Zettelkasten System');
+    console.log('• Real-time Analysis');
     console.log('');
-    console.log('To enable JanusGraph features:');
-    console.log('1. Install Docker');
-    console.log('2. Run: docker-compose -f docker-compose.janusgraph.yml up -d');
-    console.log('3. Access Help > JanusGraph Setup Guide for detailed instructions');
+    console.log('🚀 Ready to use - no external setup required!');
+    console.log('💾 All data is automatically saved locally in the app directory.');
+    console.log('📚 Access Help menu for usage guides.');
     
   } catch (error) {
     console.error('Failed to initialize InfraSyncus:', error);

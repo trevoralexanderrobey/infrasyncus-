@@ -102,13 +102,13 @@ export class TextProcessingService {
       const vertices = await this.janusGraphService.getVertices('Concept');
       const edges = await this.janusGraphService.getEdges('FOLLOWS');
       
-      const nodes = vertices.map(vertex => ({
+      const nodes = vertices.map((vertex: any) => ({
         id: vertex.properties?.conceptId?.[0]?.value || vertex.id,
         label: vertex.properties?.label?.[0]?.value || 'Unknown',
         type: vertex.properties?.type?.[0]?.value || 'concept'
       }));
       
-      const edgeList = edges.map(edge => ({
+      const edgeList = edges.map((edge: any) => ({
         source: edge.outV,
         target: edge.inV,
         label: edge.properties?.label?.[0]?.value || 'follows'

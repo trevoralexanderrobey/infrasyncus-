@@ -3,10 +3,10 @@ import { ZettelkastenService } from './zettelkasten.service';
 import { ZettelkastenController } from './zettelkasten.controller';
 import { PrismaService } from '../prisma/prisma.service';
 import { OllamaService } from './ollama.service';
-import { JanusGraphModule } from '../janusgraph/janusgraph.module';
+import { GraphModule } from '../graph/graph.module';
 
 @Module({
-  imports: [JanusGraphModule],
+  imports: [GraphModule],
   providers: [ZettelkastenService, PrismaService, OllamaService],
   controllers: [ZettelkastenController],
   exports: [ZettelkastenService]

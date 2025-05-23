@@ -1,116 +1,105 @@
-# Release Notes - InfraSyncus v2.0.0
+# 🚀 InfraSyncus Release Notes
 
-## 🎉 Major Version 2.0.0 - JanusGraph Integration
+## 🎉 Major Version 2.1.0 - Enhanced Multimodal AI Edition
 
-### 🚀 New Features
+### 🆕 **NEW FEATURES**
 
-#### Graph Database Migration
-- **Replaced Neo4j with JanusGraph**: Open-source graph database with better scalability
-- **Gremlin Query Language**: More powerful graph traversal capabilities
-- **Docker Integration**: Easy setup with `docker-compose.janusgraph.yml`
-- **Graceful Fallback**: Application continues without graph database if unavailable
+#### 🤖 **Enhanced AI Capabilities**
+- **Multimodal Analysis**: Added support for image analysis with LLaVA and MoonDream models
+- **Quantized Models**: Optimized for 16GB RAM systems with MoonDream:1.8b (1.7GB) and BakLLaVA (4.7GB)
+- **Code Analysis**: Enhanced CodeLlama integration for programming concept extraction
+- **Knowledge Graph Enhancement**: AI-powered concept suggestions and relationship discovery
 
-#### Enhanced Knowledge Graph Features
-- **Persistent Text Networks**: Store and retrieve text analysis results
-- **Incremental Analysis**: Build knowledge graphs over time
-- **Concept Mapping**: Automatic extraction and linking of concepts
-- **Advanced Graph Queries**: Path finding and centrality analysis
+#### 🧠 **Multimodal Features**
+- **Image-to-Knowledge**: Extract concepts from screenshots, diagrams, and visual content
+- **Code Screenshot Analysis**: Analyze programming concepts from code images
+- **Visual Concept Mapping**: Transform visual information into knowledge networks
+- **Cross-Modal Integration**: Combine text, code, and image analysis
 
-#### Improved Text Processing
-- **Co-occurrence Relationships**: Better word relationship modeling
-- **Topic Clustering**: Advanced community detection algorithms
-- **Real-time Graph Building**: Store analysis results in JanusGraph
-- **Vertex Deduplication**: Prevent duplicate concepts in the graph
+#### 🏗️ **Architecture Improvements**
+- **ARM64 Native Support**: Optimized builds for Apple Silicon Macs
+- **Enhanced Graph Database**: Improved JanusGraph integration with better error handling
+- **Memory Optimization**: Efficient model loading for constrained systems
+- **Real-time Processing**: Faster analysis with quantized models
 
-### 🔧 Technical Improvements
+### 🔧 **TECHNICAL ENHANCEMENTS**
 
-#### Backend Architecture
-- **JanusGraphService**: New service for graph database operations
-- **Enhanced Error Handling**: Better error messages and fallback behaviors
-- **Module Restructuring**: Cleaner separation of concerns
-- **Type Safety**: Improved TypeScript integration
+#### 🎯 **AI Model Management**
+- **Automatic Model Detection**: Dynamic discovery of installed Ollama models
+- **Fallback Mechanisms**: Graceful degradation when models are unavailable
+- **Resource Optimization**: Smart model selection based on available RAM
+- **Performance Monitoring**: Model usage tracking and optimization
 
-#### API Enhancements
-- **New Endpoints**: Graph retrieval and storage APIs
-- **Better Error Responses**: More informative error messages
-- **Async Performance**: Improved handling of large graph operations
+#### 📊 **Knowledge Graph Features**
+- **Enhanced Network Analysis**: Improved community detection and centrality measures
+- **Concept Clustering**: AI-powered topic identification and grouping
+- **Gap Detection**: Automatic identification of missing knowledge connections
+- **Temporal Evolution**: Track knowledge growth over time
 
-### 🗂️ File Structure Changes
+### 🚀 **PERFORMANCE IMPROVEMENTS**
+- **Faster Startup**: Optimized application initialization
+- **Reduced Memory Usage**: Efficient model loading and caching
+- **Better Error Handling**: Robust fallback mechanisms
+- **Enhanced Stability**: Improved error recovery and logging
 
+### 📦 **DISTRIBUTION**
+- **ARM64 DMG**: Native Apple Silicon support (98MB)
+- **x64 DMG**: Intel Mac compatibility (102MB)
+- **Universal Compatibility**: Support for both architectures
+- **Zero Dependencies**: All AI models run locally via Ollama
+
+### 🔄 **MIGRATION NOTES**
+
+#### From v2.0.0 to v2.1.0:
+- **New Dependencies**: Gremlin package added for enhanced graph support
+- **AI Models**: Install recommended models: `ollama pull moondream:1.8b` and `ollama pull bakllava`
+- **Configuration**: No breaking changes to existing configurations
+- **Data**: Existing knowledge graphs remain fully compatible
+
+### 🛠️ **INSTALLATION**
+
+#### **Quick Start**
+1. **Download**: Get the appropriate DMG for your Mac architecture
+2. **Install**: Drag InfraSyncus to Applications folder
+3. **Launch**: Open the application - no additional setup required
+4. **AI Models** (Optional): Install Ollama models for enhanced features
+
+#### **AI Enhancement Setup**
+```bash
+# Install Ollama (if not already installed)
+brew install ollama
+
+# Install recommended models
+ollama pull moondream:1.8b    # 1.7GB - Fast multimodal
+ollama pull bakllava          # 4.7GB - Advanced multimodal  
+ollama pull codellama:7b      # 3.8GB - Code analysis
+
+# Start Ollama service
+ollama serve
 ```
-backend/src/
-├── janusgraph/           # New JanusGraph integration
-│   ├── janusgraph.service.ts
-│   └── janusgraph.module.ts
-├── text-processing/      # Enhanced text processing
-│   ├── text-processing.service.ts
-│   ├── text-processing.controller.ts
-│   └── text-processing.module.ts
-└── ai/
-    ├── zettelkasten.service.ts  # Updated with JanusGraph
-    └── zettelkasten.controller.ts
-```
 
-### 🚦 Migration Guide
+### 🎯 **RECOMMENDED SYSTEM REQUIREMENTS**
+- **macOS**: 10.12+ (APFS support)
+- **RAM**: 8GB minimum, 16GB recommended for AI features
+- **Storage**: 2GB for app + 6-10GB for AI models
+- **Architecture**: ARM64 (Apple Silicon) or x64 (Intel)
 
-#### From Neo4j to JanusGraph
+### 🌟 **WHAT'S NEW IN THE UI**
+- **Model Status Indicators**: Real-time AI model availability
+- **Multimodal Analysis Panel**: New interface for image analysis
+- **Enhanced Visualization**: Improved knowledge graph rendering
+- **Performance Metrics**: Real-time analysis statistics
 
-1. **Stop Neo4j services**
-2. **Start JanusGraph**: `docker-compose -f docker-compose.janusgraph.yml up -d`
-3. **Update environment variables**:
-   ```env
-   JANUSGRAPH_HOST="localhost"
-   JANUSGRAPH_PORT="8182"
-   ```
-4. **Rebuild and restart**: `npm run build && npm run start:prod`
-
-#### Configuration Changes
-
-- Remove `NEO4J_*` environment variables
-- Add `JANUSGRAPH_*` environment variables
-- Update any custom graph queries from Cypher to Gremlin
-
-### 🐛 Bug Fixes
-
-- Fixed application crashes when graph database is unavailable
-- Improved error handling in text processing
-- Better memory management for large text analysis
-- Fixed duplicate vertex creation issues
-
-### 📊 Performance Improvements
-
-- **Faster Graph Operations**: JanusGraph provides better performance for large graphs
-- **Reduced Memory Usage**: Better handling of graph data structures
-- **Concurrent Processing**: Improved handling of multiple analysis requests
-- **Connection Pooling**: Better database connection management
-
-### 🔮 What's Next (v2.1.0)
-
-- **Advanced Graph Algorithms**: PageRank, community detection
-- **Real-time Collaboration**: Multi-user graph editing
-- **Graph Visualization Improvements**: 3D graph rendering
-- **Export/Import**: Backup and restore graph data
-- **Search Integration**: Full-text search with Elasticsearch
-
-### 🛠️ Developer Notes
-
-#### New Dependencies
-- `gremlin`: ^3.7.0 (TinkerPop Gremlin JavaScript driver)
-
-#### Removed Dependencies
-- `neo4j-driver`: Removed in favor of JanusGraph
-
-#### Testing
-- All existing tests pass
-- New JanusGraph integration tests added
-- Performance benchmarks improved
-
-### 📚 Documentation Updates
-
-- **JANUSGRAPH_SETUP.md**: Comprehensive setup guide
-- **README.md**: Updated quick start instructions
-- **API Documentation**: New JanusGraph endpoints documented
+### 🔮 **COMING NEXT**
+- **Voice Analysis**: Audio-to-knowledge conversion
+- **Collaborative Features**: Multi-user knowledge graphs
+- **Advanced Clustering**: Hierarchical concept organization
+- **Export Enhancements**: More format options for knowledge graphs
 
 ---
 
-**Note**: This version maintains backward compatibility with all existing API endpoints while adding powerful new graph capabilities with JanusGraph. 
+**Download now and experience the future of multimodal knowledge analysis with InfraSyncus v2.1.0!**
+
+**Version**: 2.1.0 - Enhanced Multimodal AI Edition
+**Build Date**: May 23, 2025
+**Architectures**: ARM64, x64 

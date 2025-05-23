@@ -1,7 +1,7 @@
 {
   "name": "infrasyncus",
-  "version": "2.0.0",
-  "description": "Advanced text-to-network visualization platform with JanusGraph knowledge graphs and Zettelkasten capabilities",
+  "version": "2.1.0",
+  "description": "Advanced text-to-network visualization platform with multimodal AI capabilities and built-in embedded graph database",
   "main": "electron-main.js",
   "homepage": "./",
   "scripts": {
@@ -22,10 +22,7 @@
     "dist:mac-arm64-dmg": "npm run build && electron-builder --mac --config.mac.target=dmg --config.mac.target.arch=arm64",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
-    "postinstall": "electron-builder install-app-deps",
-    "janusgraph:start": "docker-compose -f docker-compose.janusgraph.yml up -d",
-    "janusgraph:stop": "docker-compose -f docker-compose.janusgraph.yml down",
-    "start:with-janusgraph": "./start-with-janusgraph.sh"
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
     "appId": "com.infrasyncus.app",
@@ -43,9 +40,6 @@
       "backend/dev.db",
       "frontend/dist/**/*",
       "assets/**/*",
-      "docker-compose.janusgraph.yml",
-      "start-with-janusgraph.sh",
-      "JANUSGRAPH_SETUP.md",
       "README.md",
       "RELEASE_NOTES.md",
       "INSTALLATION_GUIDE.md"
@@ -54,18 +48,6 @@
       {
         "from": "backend/node_modules/.prisma",
         "to": "backend/node_modules/.prisma"
-      },
-      {
-        "from": "docker-compose.janusgraph.yml",
-        "to": "docker-compose.janusgraph.yml"
-      },
-      {
-        "from": "start-with-janusgraph.sh",
-        "to": "start-with-janusgraph.sh"
-      },
-      {
-        "from": "JANUSGRAPH_SETUP.md",
-        "to": "JANUSGRAPH_SETUP.md"
       }
     ],
     "mac": {
@@ -115,7 +97,7 @@
       "createStartMenuShortcut": true
     },
     "dmg": {
-      "title": "InfraSyncus v2.0.0 - JanusGraph Edition",
+      "title": "InfraSyncus v2.0.0 - Embedded Graph Edition",
       "contents": [
         {
           "x": 410,
@@ -131,7 +113,7 @@
       ]
     }
   },
-  "keywords": ["text-analysis", "network-visualization", "zettelkasten", "knowledge-management", "janusgraph", "graph-database"],
+  "keywords": ["text-analysis", "network-visualization", "zettelkasten", "knowledge-management", "embedded-graph", "graph-database"],
   "author": "InfraSyncus Team",
   "license": "MIT",
   "devDependencies": {
