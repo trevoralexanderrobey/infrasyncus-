@@ -12,11 +12,13 @@ const zettelkasten_service_1 = require("./zettelkasten.service");
 const zettelkasten_controller_1 = require("./zettelkasten.controller");
 const prisma_service_1 = require("../prisma/prisma.service");
 const ollama_service_1 = require("./ollama.service");
+const graph_module_1 = require("../graph/graph.module");
 let ZettelkastenModule = class ZettelkastenModule {
 };
 exports.ZettelkastenModule = ZettelkastenModule;
 exports.ZettelkastenModule = ZettelkastenModule = __decorate([
     (0, common_1.Module)({
+        imports: [graph_module_1.GraphModule],
         providers: [zettelkasten_service_1.ZettelkastenService, prisma_service_1.PrismaService, ollama_service_1.OllamaService],
         controllers: [zettelkasten_controller_1.ZettelkastenController],
         exports: [zettelkasten_service_1.ZettelkastenService]

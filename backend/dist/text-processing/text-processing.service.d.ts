@@ -1,4 +1,4 @@
-import { Neo4jService } from '../neo4j/neo4j.service';
+import { JanusGraphService } from '../janusgraph/janusgraph.service';
 type Node = {
     id: string;
     label: string;
@@ -10,9 +10,13 @@ type Edge = {
     label: string;
 };
 export declare class TextProcessingService {
-    private readonly neo4jService;
-    constructor(neo4jService: Neo4jService);
+    private readonly janusGraphService;
+    constructor(janusGraphService: JanusGraphService);
     processTextToNetwork(text: string): Promise<{
+        nodes: Node[];
+        edges: Edge[];
+    }>;
+    getGraphData(): Promise<{
         nodes: Node[];
         edges: Edge[];
     }>;
