@@ -21,17 +21,19 @@ cd frontend && python3 -m http.server 8080 --directory dist &
 open http://localhost:8080
 ```
 
-**Default Credentials:**
-- Zettelkasten Password: `InfraSyncus2024!`
+**Default Credentials (EXAMPLES ONLY - CHANGE FOR PRODUCTION):**
+- Zettelkasten Password: `InfraSyncus2024!` ⚠️ **EXAMPLE ONLY**
 
 ### Environment Configuration
 
-The application is pre-configured with:
+The application is pre-configured with **EXAMPLE VALUES** for development:
 - **Database**: SQLite (`backend/dev.db`)
-- **JWT Secret**: `InfraSyncus-JWT-Secret-2024-Production-Key`
-- **Zettelkasten Password**: `InfraSyncus2024!`
+- **JWT Secret**: `InfraSyncus-JWT-Secret-2024-Production-Key` ⚠️ **EXAMPLE ONLY**
+- **Zettelkasten Password**: `InfraSyncus2024!` ⚠️ **EXAMPLE ONLY**
 - **Backend Port**: 3001
 - **Frontend Port**: 8080 (when using Python server)
+
+> ⚠️ **CRITICAL SECURITY WARNING**: The passwords and secrets shown above are examples only for development/testing purposes. **You MUST generate unique, strong values for production deployment.**
 
 ### API Endpoints (Working ✅)
 
@@ -56,16 +58,18 @@ The application is pre-configured with:
 
 ### Test the API
 
+> ⚠️ **Note**: The following examples use the default development password `InfraSyncus2024!`. Replace with your production password when deploying.
+
 ```bash
-# Test getting notes
+# Test getting notes (replace password for production)
 curl 'http://localhost:3001/api/zettelkasten/notes?password=InfraSyncus2024!'
 
-# Test creating a note
+# Test creating a note (replace password for production)
 curl -X POST 'http://localhost:3001/api/zettelkasten/notes' \
   -H 'Content-Type: application/json' \
   -d '{"content":"My first note","tags":["test"],"password":"InfraSyncus2024!"}'
 
-# Test text analysis
+# Test text analysis (replace password for production)
 curl -X POST 'http://localhost:3001/api/zettelkasten/text/analyze' \
   -H 'Content-Type: application/json' \
   -d '{"text":"AI and machine learning transform technology","password":"InfraSyncus2024!"}'
@@ -132,13 +136,41 @@ CMD ["sh", "-c", "cd backend && npm run start:prod & cd frontend && python3 -m h
 
 ## Security Notes
 
-⚠️ **For Production**:
-1. Change `ZETTELKASTEN_PASSWORD` in `backend/.env`
-2. Change `JWT_SECRET` in `backend/.env`
-3. Use PostgreSQL instead of SQLite
-4. Enable HTTPS
-5. Set up proper CORS configuration
-6. Use environment variables for secrets
+⚠️ **CRITICAL: For Production Deployment**:
+
+### 1. Generate Unique Secrets (REQUIRED)
+**All example passwords and secrets MUST be changed before production use.**
+
+```bash
+# Generate a strong JWT secret (32+ characters)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# Generate a strong Zettelkasten password (16+ characters)
+openssl rand -base64 24
+
+# Or use password generators for strong unique values
+```
+
+**Required Changes:**
+1. ✅ Change `ZETTELKASTEN_PASSWORD` in `backend/.env` to a unique strong password
+2. ✅ Change `JWT_SECRET` in `backend/.env` to a cryptographically secure random string
+3. ✅ Update any hardcoded example credentials in your deployment scripts
+4. ✅ Use PostgreSQL instead of SQLite for production
+5. ✅ Enable HTTPS with valid SSL certificates
+6. ✅ Set up proper CORS configuration for your domain
+7. ✅ Store all secrets in environment variables, never in code
+
+### 2. Example Production Environment Variables
+```bash
+# backend/.env (PRODUCTION)
+DATABASE_URL="postgresql://username:password@localhost:5432/infrasyncus_prod"
+JWT_SECRET="your-unique-32-character-jwt-secret-here"
+ZETTELKASTEN_PASSWORD="your-unique-strong-password-here"
+CORS_ORIGIN="https://yourdomain.com"
+NODE_ENV="production"
+```
+
+> 🔒 **Remember**: The example values in this guide (`InfraSyncus2024!`, `InfraSyncus-JWT-Secret-2024-Production-Key`, etc.) are provided for development/testing only and should never be used in production environments.
 
 ## Troubleshooting
 
