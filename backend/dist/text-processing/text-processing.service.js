@@ -17,6 +17,9 @@ let TextProcessingService = class TextProcessingService {
         this.janusGraphService = janusGraphService;
     }
     async processTextToNetwork(text) {
+        if (!text || typeof text !== 'string') {
+            return { nodes: [], edges: [] };
+        }
         const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 2);
         const uniqueWords = [...new Set(words)];
         const nodes = uniqueWords.map((word, i) => ({

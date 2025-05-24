@@ -1,14 +1,43 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import * as gremlin from 'gremlin';
+
+// Dynamic require fallback for gremlin dependency
+let gremlin: any;
+try {
+  gremlin = require('gremlin');
+} catch (error) {
+  console.error('⚠️  Gremlin dependency not available:', error.message);
+  console.error('📦 Install with: npm install gremlin');
+  console.error('🚀 Application will continue without JanusGraph functionality');
+  // Create mock gremlin object to prevent TypeScript errors
+  gremlin = {
+    driver: {
+      Client: class MockClient { constructor() {} },
+      DriverRemoteConnection: class MockDriverRemoteConnection { constructor() {} }
+    },
+    process: {
+      traversal: () => ({
+        withRemote: () => null
+      })
+    }
+  };
+}
 
 @Injectable()
 export class JanusGraphService implements OnModuleInit {
-  private client: gremlin.driver.Client;
-  private g: gremlin.process.GraphTraversalSource;
+  private client: any;
+  private g: any;
 
   constructor() {
     const host = process.env.JANUSGRAPH_HOST || 'localhost';
     const port = process.env.JANUSGRAPH_PORT || '8182';
+    
+    // Check if gremlin is actually available (not our mock)
+    if (!gremlin.driver.Client || gremlin.driver.Client.name === 'MockClient') {
+      console.warn('🔧 JanusGraph client not available - using fallback mode');
+      this.client = null;
+      this.g = null;
+      return;
+    }
     
     try {
       this.client = new gremlin.driver.Client(

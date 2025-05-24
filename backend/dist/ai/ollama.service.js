@@ -104,7 +104,8 @@ let OllamaService = OllamaService_1 = class OllamaService {
         }
     }
     async analyzeCode(code, language) {
-        const codeModel = this.availableModels.find(m => m.type === 'code' && m.available);
+        const availableModels = this.getAvailableModels();
+        const codeModel = availableModels.find(m => m.type === 'code');
         if (!codeModel) {
             return {
                 concepts: ['programming', 'code', language || 'unknown'].filter(Boolean),
@@ -146,7 +147,8 @@ COMPLEXITY: Simple|Medium|Complex`;
         }
     }
     async analyzeImage(imageBase64, query) {
-        const multimodalModel = this.availableModels.find(m => m.type === 'multimodal' && m.available);
+        const availableModels = this.getAvailableModels();
+        const multimodalModel = availableModels.find(m => m.type === 'multimodal');
         if (!multimodalModel) {
             return {
                 textContent: 'Image analysis requires multimodal model',
@@ -255,7 +257,8 @@ Respond with bullet points.`;
         }
     }
     getPreferredTextModel() {
-        const codeModel = this.availableModels.find(m => m.type === 'code' && m.available);
+        const availableModels = this.getAvailableModels();
+        const codeModel = availableModels.find(m => m.type === 'code');
         return codeModel ? codeModel.name : 'codellama:7b';
     }
     extractFromResponse(response, prefix) {

@@ -122,7 +122,9 @@ export class OllamaService {
   }
 
   async analyzeCode(code: string, language?: string): Promise<{ concepts: string[]; explanation: string; complexity: string }> {
-    const codeModel = this.availableModels.find(m => m.type === 'code' && m.available);
+    // Use getAvailableModels() to ensure we're checking the latest available models
+    const availableModels = this.getAvailableModels();
+    const codeModel = availableModels.find(m => m.type === 'code');
     
     if (!codeModel) {
       return {
@@ -170,7 +172,9 @@ COMPLEXITY: Simple|Medium|Complex`;
   }
 
   async analyzeImage(imageBase64: string, query?: string): Promise<MultimodalAnalysis> {
-    const multimodalModel = this.availableModels.find(m => m.type === 'multimodal' && m.available);
+    // Use getAvailableModels() to ensure we're checking the latest available models
+    const availableModels = this.getAvailableModels();
+    const multimodalModel = availableModels.find(m => m.type === 'multimodal');
     
     if (!multimodalModel) {
       return {
@@ -289,7 +293,9 @@ Respond with bullet points.`;
   }
 
   private getPreferredTextModel(): string {
-    const codeModel = this.availableModels.find(m => m.type === 'code' && m.available);
+    // Use getAvailableModels() to ensure we're checking the latest available models
+    const availableModels = this.getAvailableModels();
+    const codeModel = availableModels.find(m => m.type === 'code');
     return codeModel ? codeModel.name : 'codellama:7b';
   }
 
