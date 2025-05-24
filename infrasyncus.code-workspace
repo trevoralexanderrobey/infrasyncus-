@@ -1,0 +1,48 @@
+{
+  "folders": [
+    {
+      "name": "infrasyncus",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "git.enabled": true,
+    "git.path": "git",
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    "git.smartCommitChanges": "tracked",
+    "git.fetchOnPull": true,
+    "git.pruneOnFetch": true,
+    "git.useEditorAsCommitInput": true,
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/dist/**": true,
+      "**/build/**": true,
+      "**/.next/**": true,
+      "**/.cache/**": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.next": true,
+      "**/.cache": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "ms-vscode.vscode-typescript-next",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-json",
+      "ms-python.python",
+      "ms-python.flake8",
+      "ms-python.black-formatter"
+    ]
+  }
+}
