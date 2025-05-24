@@ -1,17 +1,48 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom'
 import './App.css'
 import { Login } from './components/Login'
 import { Zettelkasten } from './components/Zettelkasten'
+import { TextAnalysis } from './components/TextAnalysis'
 
 function App() {
+  const user = localStorage.getItem('user');
+
   return (
     <Router>
       <div className="app-container">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Zettelkasten />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+        {user && (
+          <nav className="app-nav">
+            <div className="nav-brand">
+              <h2>InfraSyncus</h2>
+              <span className="tagline">Knowledge Graph & Zettelkasten</span>
+            </div>
+            <div className="nav-links">
+              <Link to="/zettelkasten" className="nav-link">Zettelkasten</Link>
+              <Link to="/text-analysis" className="nav-link">Text Analysis</Link>
+              <button 
+                className="logout-button"
+                onClick={() => {
+                  localStorage.removeItem('user');
+                  window.location.reload();
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </nav>
+        )}
+        
+        <main className="app-main">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/zettelkasten" element={<Zettelkasten />} />
+            <Route path="/text-analysis" element={<TextAnalysis />} />
+            <Route path="/" element={
+              user ? <Navigate to="/zettelkasten" /> : <Navigate to="/login" />
+            } />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </main>
       </div>
     </Router>
   )

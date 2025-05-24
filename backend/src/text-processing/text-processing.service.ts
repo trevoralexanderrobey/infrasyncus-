@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Neo4jService } from '../neo4j/neo4j.service';
+import { JanusGraphService } from '../janusgraph/janusgraph.service';
 
 type Node = {
   id: string;
@@ -15,16 +15,21 @@ type Edge = {
 
 @Injectable()
 export class TextProcessingService {
-  constructor(private readonly neo4jService: Neo4jService) {}
+  constructor(private readonly janusGraphService: JanusGraphService) {}
 
   async processTextToNetwork(text: string): Promise<{ nodes: Node[]; edges: Edge[] }> {
+    // Handle null, undefined, or empty input
+    if (!text || typeof text !== 'string') {
+      return { nodes: [], edges: [] };
+    }
+    
     // Basic text processing to extract concepts and relationships
-    const words = text.toLowerCase().split(/\s+/);
+    const words = text.toLowerCase().split(/\s+/).filter(word => word.length > 2);
     const uniqueWords = [...new Set(words)];
     
     // Create nodes for each unique word
     const nodes = uniqueWords.map((word, i) => ({
-      id: `node-${i}`,
+      id: `concept-${word}`,
       label: word,
       type: 'concept'
     }));
@@ -32,42 +37,92 @@ export class TextProcessingService {
     // Create edges between consecutive words
     const edges = [];
     for (let i = 0; i < words.length - 1; i++) {
-      const sourceIndex = uniqueWords.indexOf(words[i]);
-      const targetIndex = uniqueWords.indexOf(words[i+1]);
+      const sourceId = `concept-${words[i]}`;
+      const targetId = `concept-${words[i+1]}`;
       
-      if (sourceIndex !== -1 && targetIndex !== -1) {
+      if (uniqueWords.includes(words[i]) && uniqueWords.includes(words[i+1])) {
         edges.push({
-          source: `node-${sourceIndex}`,
-          target: `node-${targetIndex}`,
-          label: 'related'
+          source: sourceId,
+          target: targetId,
+          label: 'follows'
         });
       }
     }
     
-    // Store in Neo4j
-    const session = this.neo4jService.getSession();
+    // Store in JanusGraph
     try {
-      await session.writeTransaction(async tx => {
-        // Create nodes
-        for (const node of nodes) {
-          await tx.run(
-            'MERGE (n:Concept {id: $id, label: $label, type: $type})',
-            node
-          );
+      const vertexMap = new Map();
+      
+      // Create vertices and store their IDs
+      for (const node of nodes) {
+        try {
+          // Check if vertex already exists
+          let vertex = await this.janusGraphService.getVertexByProperty('conceptId', node.id, 'Concept');
+          
+          if (!vertex) {
+            // Create new vertex
+            vertex = await this.janusGraphService.createVertex('Concept', {
+              conceptId: node.id,
+              label: node.label,
+              type: node.type
+            });
+          }
+          
+          if (vertex && vertex.id) {
+            vertexMap.set(node.id, vertex.id);
+          }
+        } catch (error) {
+          console.error(`Error creating vertex for ${node.id}:`, error);
         }
-        
-        // Create relationships
-        for (const edge of edges) {
-          await tx.run(
-            'MATCH (a:Concept {id: $source}), (b:Concept {id: $target}) MERGE (a)-[r:RELATED]->(b)',
-            edge
-          );
+      }
+      
+      // Create edges using the vertex IDs
+      for (const edge of edges) {
+        try {
+          const sourceVertexId = vertexMap.get(edge.source);
+          const targetVertexId = vertexMap.get(edge.target);
+          
+          if (sourceVertexId && targetVertexId) {
+            await this.janusGraphService.createEdge(
+              sourceVertexId,
+              targetVertexId,
+              'FOLLOWS',
+              { weight: 1, label: edge.label }
+            );
+          }
+        } catch (error) {
+          console.error(`Error creating edge from ${edge.source} to ${edge.target}:`, error);
         }
-      });
-    } finally {
-      await session.close();
+      }
+    } catch (error) {
+      console.error('Error storing graph in JanusGraph:', error);
     }
     
     return { nodes, edges };
+  }
+
+  async getGraphData(): Promise<{ nodes: Node[]; edges: Edge[] }> {
+    try {
+      // Get all concept vertices
+      const vertices = await this.janusGraphService.getVertices('Concept');
+      const edges = await this.janusGraphService.getEdges('FOLLOWS');
+      
+      const nodes = vertices.map((vertex: any) => ({
+        id: vertex.properties?.conceptId?.[0]?.value || vertex.id,
+        label: vertex.properties?.label?.[0]?.value || 'Unknown',
+        type: vertex.properties?.type?.[0]?.value || 'concept'
+      }));
+      
+      const edgeList = edges.map((edge: any) => ({
+        source: edge.outV,
+        target: edge.inV,
+        label: edge.properties?.label?.[0]?.value || 'follows'
+      }));
+      
+      return { nodes, edges: edgeList };
+    } catch (error) {
+      console.error('Error retrieving graph data:', error);
+      return { nodes: [], edges: [] };
+    }
   }
 }

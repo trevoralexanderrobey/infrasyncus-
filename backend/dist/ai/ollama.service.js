@@ -5,39 +5,277 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var OllamaService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OllamaService = void 0;
 const common_1 = require("@nestjs/common");
-const axios_1 = require("axios");
-let OllamaService = class OllamaService {
+let OllamaService = OllamaService_1 = class OllamaService {
     constructor() {
-        this.baseUrl = 'http://localhost:11434';
+        this.logger = new common_1.Logger(OllamaService_1.name);
+        this.availableModels = [
+            {
+                name: 'codellama:7b',
+                type: 'code',
+                ramUsage: 4.1,
+                description: 'CodeLlama for programming concepts and code analysis',
+                available: false
+            },
+            {
+                name: 'llava:7b',
+                type: 'multimodal',
+                ramUsage: 4.1,
+                description: 'LLaVA for image + text analysis (RECOMMENDED)',
+                available: false
+            },
+            {
+                name: 'bakllava',
+                type: 'multimodal',
+                ramUsage: 4.1,
+                description: 'BakLLaVA lightweight multimodal model',
+                available: false
+            },
+            {
+                name: 'moondream:1.8b',
+                type: 'multimodal',
+                ramUsage: 1.7,
+                description: 'Tiny but capable multimodal model (FAST)',
+                available: false
+            }
+        ];
+        this.baseUrl = process.env.OLLAMA_HOST || 'http://localhost:11434';
+        this.checkAvailableModels();
     }
-    async generateText(prompt, model = 'codellama:7b-instruct') {
+    async checkAvailableModels() {
         try {
-            const response = await axios_1.default.post(`${this.baseUrl}/api/generate`, {
-                model,
-                prompt,
-                stream: false
+            const response = await fetch(`${this.baseUrl}/api/tags`);
+            if (response.ok) {
+                const data = await response.json();
+                const installedModels = data.models?.map((m) => m.name) || [];
+                this.availableModels.forEach(model => {
+                    model.available = installedModels.some((installed) => installed.startsWith(model.name.split(':')[0]));
+                });
+                this.logger.log(`Available models: ${this.availableModels.filter(m => m.available).map(m => m.name).join(', ')}`);
+            }
+        }
+        catch (error) {
+            this.logger.warn('Ollama not available - AI features will be limited');
+        }
+    }
+    getAvailableModels() {
+        return this.availableModels.filter(m => m.available);
+    }
+    getRecommendedModels() {
+        const multimodalModels = this.availableModels.filter(m => m.type === 'multimodal' && m.available);
+        const codeModels = this.availableModels.filter(m => m.type === 'code' && m.available);
+        return {
+            text: codeModels.length > 0 ? codeModels[0].name : 'No code model available',
+            multimodal: multimodalModels.length > 0 ? multimodalModels[0].name : 'No multimodal model available'
+        };
+    }
+    async generateText(prompt, modelName) {
+        const model = modelName || this.getPreferredTextModel();
+        try {
+            const response = await fetch(`${this.baseUrl}/api/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model,
+                    prompt,
+                    stream: false,
+                    options: {
+                        temperature: 0.7,
+                        top_p: 0.9,
+                        max_tokens: 1000
+                    }
+                })
             });
-            return response.data.response;
+            if (!response.ok) {
+                throw new Error(`Ollama API error: ${response.statusText}`);
+            }
+            const data = await response.json();
+            return data.response || 'No response generated';
         }
         catch (error) {
-            throw new Error(`Ollama API error: ${error.message}`);
+            this.logger.error('Failed to generate text:', error);
+            return this.getFallbackResponse(prompt);
         }
     }
-    async listModels() {
+    async analyzeCode(code, language) {
+        const availableModels = this.getAvailableModels();
+        const codeModel = availableModels.find(m => m.type === 'code');
+        if (!codeModel) {
+            return {
+                concepts: ['programming', 'code', language || 'unknown'].filter(Boolean),
+                explanation: 'Code analysis requires CodeLlama model',
+                complexity: 'Unknown'
+            };
+        }
+        const prompt = `Analyze this ${language || 'code'} and extract:
+1. Key programming concepts used
+2. Brief explanation of what it does
+3. Complexity level (Simple/Medium/Complex)
+
+Code:
+\`\`\`${language || ''}
+${code}
+\`\`\`
+
+Respond in this format:
+CONCEPTS: concept1, concept2, concept3
+EXPLANATION: Brief explanation
+COMPLEXITY: Simple|Medium|Complex`;
         try {
-            const response = await axios_1.default.get(`${this.baseUrl}/api/tags`);
-            return response.data.models;
+            const response = await this.generateText(prompt, codeModel.name);
+            const concepts = this.extractFromResponse(response, 'CONCEPTS:')
+                .split(',')
+                .map(c => c.trim())
+                .filter(c => c.length > 0);
+            const explanation = this.extractFromResponse(response, 'EXPLANATION:');
+            const complexity = this.extractFromResponse(response, 'COMPLEXITY:');
+            return { concepts, explanation, complexity };
         }
         catch (error) {
-            throw new Error(`Ollama API error: ${error.message}`);
+            this.logger.error('Code analysis failed:', error);
+            return {
+                concepts: ['programming', 'code'],
+                explanation: 'Code analysis failed',
+                complexity: 'Unknown'
+            };
         }
+    }
+    async analyzeImage(imageBase64, query) {
+        const availableModels = this.getAvailableModels();
+        const multimodalModel = availableModels.find(m => m.type === 'multimodal');
+        if (!multimodalModel) {
+            return {
+                textContent: 'Image analysis requires multimodal model',
+                concepts: ['image', 'visual', 'multimodal'],
+                reasoning: 'No multimodal model available'
+            };
+        }
+        const prompt = query || `Analyze this image and extract:
+1. All text content visible
+2. Key concepts, objects, or ideas shown
+3. Any code snippets or technical diagrams
+4. Overall meaning or purpose
+
+Respond in this format:
+TEXT: Any text visible in the image
+CONCEPTS: concept1, concept2, concept3
+CODE: Any code snippets found
+DIAGRAMS: Description of any diagrams/charts
+REASONING: What this image is about`;
+        try {
+            const response = await fetch(`${this.baseUrl}/api/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: multimodalModel.name,
+                    prompt,
+                    images: [imageBase64.replace(/^data:image\/[^;]+;base64,/, '')],
+                    stream: false,
+                    options: {
+                        temperature: 0.3,
+                        top_p: 0.9
+                    }
+                })
+            });
+            if (!response.ok) {
+                throw new Error(`Ollama API error: ${response.statusText}`);
+            }
+            const data = await response.json();
+            const responseText = data.response || 'No analysis available';
+            return {
+                textContent: this.extractFromResponse(responseText, 'TEXT:'),
+                concepts: this.extractFromResponse(responseText, 'CONCEPTS:')
+                    .split(',')
+                    .map(c => c.trim())
+                    .filter(c => c.length > 0),
+                codeSnippets: [this.extractFromResponse(responseText, 'CODE:')].filter(c => c.length > 0),
+                diagrams: [this.extractFromResponse(responseText, 'DIAGRAMS:')].filter(d => d.length > 0),
+                reasoning: this.extractFromResponse(responseText, 'REASONING:')
+            };
+        }
+        catch (error) {
+            this.logger.error('Image analysis failed:', error);
+            return {
+                textContent: 'Image analysis failed',
+                concepts: ['image', 'visual'],
+                reasoning: 'Analysis failed: ' + error.message
+            };
+        }
+    }
+    async generateConceptSuggestions(existingConcepts, domain) {
+        const model = this.getPreferredTextModel();
+        const prompt = `Given these existing concepts: ${existingConcepts.join(', ')}
+${domain ? `In the domain of: ${domain}` : ''}
+
+Suggest 5-10 related concepts that would expand this knowledge network.
+Focus on concepts that bridge different areas or reveal deeper connections.
+
+Respond with only the concept names, one per line.`;
+        try {
+            const response = await this.generateText(prompt, model);
+            return response
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0 && !line.includes(':'))
+                .slice(0, 10);
+        }
+        catch (error) {
+            this.logger.error('Concept suggestion failed:', error);
+            return [];
+        }
+    }
+    async generateKnowledgeInsights(concepts, relationships) {
+        const model = this.getPreferredTextModel();
+        const prompt = `Analyze this knowledge network:
+Concepts: ${concepts.join(', ')}
+Relationships: ${relationships.length} connections
+
+Provide insights about:
+1. Knowledge gaps or missing connections
+2. Central themes or patterns
+3. Areas for deeper exploration
+4. Cross-domain opportunities
+
+Respond with bullet points.`;
+        try {
+            const response = await this.generateText(prompt, model);
+            return response
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .slice(0, 8);
+        }
+        catch (error) {
+            this.logger.error('Knowledge insights failed:', error);
+            return ['Knowledge analysis requires AI model connection'];
+        }
+    }
+    getPreferredTextModel() {
+        const availableModels = this.getAvailableModels();
+        const codeModel = availableModels.find(m => m.type === 'code');
+        return codeModel ? codeModel.name : 'codellama:7b';
+    }
+    extractFromResponse(response, prefix) {
+        const lines = response.split('\n');
+        const targetLine = lines.find(line => line.toLowerCase().includes(prefix.toLowerCase()));
+        return targetLine ? targetLine.replace(new RegExp(prefix, 'i'), '').trim() : '';
+    }
+    getFallbackResponse(prompt) {
+        if (prompt.toLowerCase().includes('concept')) {
+            return 'concept analysis, knowledge extraction, semantic understanding';
+        }
+        return 'AI analysis requires Ollama connection';
     }
 };
 exports.OllamaService = OllamaService;
-exports.OllamaService = OllamaService = __decorate([
-    (0, common_1.Injectable)()
+exports.OllamaService = OllamaService = OllamaService_1 = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [])
 ], OllamaService);
 //# sourceMappingURL=ollama.service.js.map

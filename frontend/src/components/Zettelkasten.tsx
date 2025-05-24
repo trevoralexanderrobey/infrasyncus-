@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import './Zettelkasten.css';
 import { useNavigate } from 'react-router-dom';
 import { GraphVisualization } from './GraphVisualization';
+import { API_BASE_URL } from '../config';
 
 type Note = {
   id: string;
@@ -39,16 +40,17 @@ export const Zettelkasten: React.FC = () => {
   const fetchNotes = async () => {
     setIsLoading(true);
     setError('');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const response = await axios.get('/api/zettelkasten/notes', {
+      const response = await axios.get(`${API_BASE_URL}/api/zettelkasten/notes`, { 
         params: { password },
         headers: {
           Authorization: `Bearer ${user.token}`
         }
       });
       setNotes(response.data);
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError<any>;
       setError('Failed to fetch notes: ' + (err.response?.data?.message || err.message));
       console.error('Error fetching notes:', err);
     } finally {
@@ -62,7 +64,7 @@ export const Zettelkasten: React.FC = () => {
     setError('');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     try {
-      await axios.post('/api/zettelkasten/notes', { 
+      await axios.post(`${API_BASE_URL}/api/zettelkasten/notes`, { 
         content: currentNote,
         tags: currentTags,
         password,
@@ -75,7 +77,8 @@ export const Zettelkasten: React.FC = () => {
       setCurrentNote('');
       setCurrentTags([]);
       fetchNotes();
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError<any>;
       if (err.response?.status === 401) {
         setError('Invalid Zettelkasten password');
         setPassword('');
@@ -93,7 +96,7 @@ export const Zettelkasten: React.FC = () => {
     setError('');
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      await axios.post('/api/zettelkasten/links', { 
+      await axios.post(`${API_BASE_URL}/api/zettelkasten/links`, { 
         noteId1, 
         noteId2, 
         password 
@@ -122,14 +125,15 @@ export const Zettelkasten: React.FC = () => {
     setError('');
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const response = await axios.get(`/api/zettelkasten/notes/${noteId}/connections`, { 
+      const response = await axios.get(`${API_BASE_URL}/api/zettelkasten/notes/${noteId}/connections`, { 
         params: { password },
         headers: {
           Authorization: `Bearer ${user.token}`
         }
       });
       setLinks(response.data);
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError<any>;
       setError('Failed to fetch connections: ' + (err.response?.data?.message || err.message));
       console.error('Error fetching graph:', err);
     } finally {
@@ -143,14 +147,15 @@ export const Zettelkasten: React.FC = () => {
     setError('');
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const response = await axios.get(`/api/zettelkasten/notes/${noteId}/suggestions`, { 
+      const response = await axios.get(`${API_BASE_URL}/api/zettelkasten/notes/${noteId}/suggestions`, { 
         params: { password },
         headers: {
           Authorization: `Bearer ${user.token}`
         }
       });
       setSuggestions(response.data);
-    } catch (err) {
+    } catch (error) {
+      const err = error as AxiosError<any>;
       setError('Failed to fetch suggestions: ' + (err.response?.data?.message || err.message));
       console.error('Error fetching suggestions:', err);
     } finally {

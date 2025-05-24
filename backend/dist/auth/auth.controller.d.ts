@@ -15,12 +15,19 @@ export declare class AuthController {
     constructor(authService: AuthService, jwtService: JwtService);
     login({ email, password }: LoginDto): Promise<{
         user: {
-            id: any;
-            email: any;
-            name: any;
+            id: number;
+            email: string;
+            name: string;
         };
         token: string;
     }>;
-    register({ email, password, name }: RegisterDto): Promise<any>;
+    register({ email, password, name }: RegisterDto): Promise<{
+        name: string | null;
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        password: string;
+        email: string;
+    }>;
 }
 export {};

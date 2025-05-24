@@ -8,17 +8,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextProcessingModule = void 0;
 const common_1 = require("@nestjs/common");
-const text_processing_service_1 = require("./text-processing.service");
-const text_processing_controller_1 = require("./text-processing.controller");
-const neo4j_module_1 = require("../neo4j/neo4j.module");
 let TextProcessingModule = class TextProcessingModule {
 };
 exports.TextProcessingModule = TextProcessingModule;
 exports.TextProcessingModule = TextProcessingModule = __decorate([
     (0, common_1.Module)({
-        imports: [neo4j_module_1.Neo4jModule],
-        controllers: [text_processing_controller_1.TextProcessingController],
-        providers: [text_processing_service_1.TextProcessingService]
+        imports: [],
+        controllers: [],
     })
 ], TextProcessingModule);
 //# sourceMappingURL=text-processing.module.js.map

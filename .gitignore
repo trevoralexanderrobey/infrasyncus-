@@ -27,6 +27,8 @@ yarn-debug.log*
 yarn-error.log*
 .npm
 .yarn/
+.pnp/
+.pnp.js
 
 # Environment variables
 .env
@@ -42,6 +44,7 @@ build/
 out/
 *.tgz
 *.tar.gz
+dist-electron/
 
 # Cache directories
 .cache/
@@ -62,6 +65,9 @@ pids/
 coverage/
 *.lcov
 
+# Testing
+coverage/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -78,8 +84,21 @@ ENV/
 *.sqlite
 *.sqlite3
 
+# Prisma
+prisma/dev.db
+prisma/migrations/
+
+# Electron
+out/
+release/
+
+# TypeScript
+*.tsbuildinfo
+
 # Miscellaneous
 *.bak
 *.backup
 *.orig
-*.rej 
+*.rej
+*.tmp
+*.temp

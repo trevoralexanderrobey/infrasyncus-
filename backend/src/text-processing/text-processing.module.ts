@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TextProcessingService } from './text-processing.service';
 import { TextProcessingController } from './text-processing.controller';
-import { Neo4jModule } from '../neo4j/neo4j.module';
+import { JanusGraphModule } from '../janusgraph/janusgraph.module';
 
 @Module({
-  imports: [Neo4jModule],
+  imports: [JanusGraphModule],
   controllers: [TextProcessingController],
-  providers: [TextProcessingService]
+  providers: [TextProcessingService],
+  exports: [TextProcessingService]
 })
 export class TextProcessingModule {}
