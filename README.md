@@ -1,6 +1,6 @@
 # InfraSyncus - Text-to-Network Visualization Platform
 
-**Current Version:** v2.1.0 Enhanced Multimodal AI Edition
+**Current Version:** v2.2.0 Enhanced Testing & Dependency Management Edition
 **Repository:** https://github.com/trevoralexanderrobey/infrasyncus-.git
 **Project Type:** InfraNodus-like text-to-network visualization with AI capabilities
 **Tech Stack:** NestJS Backend + React Frontend + Electron Desktop App
