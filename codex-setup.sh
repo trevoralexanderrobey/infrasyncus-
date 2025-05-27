@@ -270,7 +270,7 @@ cat > backend/.env << EOF
 CORS_ORIGIN="${CORS_ORIGIN:-http://localhost:5173}"
 DATABASE_URL="${DATABASE_URL:-file:./dev.db}"
 JWT_SECRET="${JWT_SECRET:-codex-testing-jwt-secret-key-12345}"
-ZETTELKASTEN_PASSWORD="${ZETTELKASTEN_PASSWORD:-codex-demo-password}"
+ZETTELKASTEN_PASSWORD="${TEST_PASSWORD:-codex-demo-password}"
 JANUSGRAPH_HOST="${JANUSGRAPH_HOST:-localhost}"
 JANUSGRAPH_PORT="${JANUSGRAPH_PORT:-8182}"
 OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}"
@@ -421,7 +421,7 @@ async function testAPI() {
   console.log("==========================================");
 
   const baseURL = "http://localhost:3000";
-  const password = process.env.ZETTELKASTEN_PASSWORD || "codex-demo-password";
+  const password = process.env.TEST_PASSWORD || "codex-demo-password";
 
   try {
     // Test health endpoint
@@ -593,7 +593,7 @@ echo "2. Start the application: npm run start"
 echo "3. Run tests: ./run-tests.sh"
 echo ""
 echo "🔑 Required Environment Variables:"
-echo "   ZETTELKASTEN_PASSWORD=codex-demo-password"
+echo "   TEST_PASSWORD=password123"
 echo "   DATABASE_URL=file:./backend/dev.db"
 echo "   JWT_SECRET=codex-testing-jwt-secret-key-12345"
 echo ""
