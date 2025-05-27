@@ -1,6 +1,6 @@
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { AuthService } from './auth.service';
 
 type LoginDto = {
   email: string;
@@ -41,6 +41,19 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() { email, password, name }: RegisterDto) {
-    return this.authService.createUser({ email, password, name });
+    const user = await this.authService.createUser({ email, password, name });
+    
+    // Generate JWT token for the new user (same as login)
+    const payload = { sub: user.id, email: user.email };
+    const token = this.jwtService.sign(payload);
+    
+    return { 
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name
+      },
+      token 
+    };
   }
 }

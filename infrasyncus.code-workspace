@@ -38,11 +38,20 @@
     "recommendations": [
       "esbenp.prettier-vscode",
       "ms-vscode.vscode-typescript-next",
-      "bradlc.vscode-tailwindcss",
       "ms-vscode.vscode-json",
       "ms-python.python",
-      "ms-python.flake8",
-      "ms-python.black-formatter"
+      "ms-python.black-formatter",
+      "ms-vscode.vscode-eslint",
+      "ms-vscode.vscode-react-native",
+      "formulahendry.auto-rename-tag",
+      "christian-kohler.path-intellisense",
+      "ms-vscode.vscode-jest",
+      "ms-vscode.vscode-docker",
+      "prisma.prisma",
+      "graphql.vscode-graphql",
+      "ms-vscode.vscode-github",
+      "github.vscode-pull-request-github",
+      "ms-vscode.vscode-electron"
     ]
   }
 }

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import axios from 'axios';
-import './Login.css';
+import React, { useState } from 'react';
 import { API_BASE_URL } from '../config';
+import './Login.css';
 
 export const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -19,7 +19,11 @@ export const Login: React.FC = () => {
       const url = isRegistering ? `${API_BASE_URL}/api/auth/register` : `${API_BASE_URL}/api/auth/login`;
       const response = await axios.post(url, formData);
       
-      localStorage.setItem('user', JSON.stringify(response.data));
+      // Store token and user data separately for better access
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Force a page reload to refresh the authentication state
       window.location.reload();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Authentication failed');

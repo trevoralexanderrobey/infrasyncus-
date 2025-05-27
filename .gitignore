@@ -102,3 +102,10 @@ release/
 *.rej
 *.tmp
 *.temp
+
+# Embedded repositories and duplicates
+infrasyncus-/
+ollama-web-search/
+
+# Virtual environments
+.venv/
