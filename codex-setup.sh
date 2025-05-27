@@ -265,17 +265,17 @@ model Link {
 EOF
 
 # Create environment file
-cat > backend/.env << 'EOF'
+cat > backend/.env << EOF
 # InfraSyncus Environment Configuration
-CORS_ORIGIN="http://localhost:5173"
-DATABASE_URL="file:./dev.db"
-JWT_SECRET="codex-testing-jwt-secret-key-12345"
-ZETTELKASTEN_PASSWORD="codex-demo-password"
-JANUSGRAPH_HOST="localhost"
-JANUSGRAPH_PORT="8182"
-OLLAMA_HOST="http://localhost:11434"
-NODE_ENV="development"
-PORT=3000
+CORS_ORIGIN="${CORS_ORIGIN:-http://localhost:5173}"
+DATABASE_URL="${DATABASE_URL:-file:./dev.db}"
+JWT_SECRET="${JWT_SECRET:-codex-testing-jwt-secret-key-12345}"
+ZETTELKASTEN_PASSWORD="${ZETTELKASTEN_PASSWORD:-codex-demo-password}"
+JANUSGRAPH_HOST="${JANUSGRAPH_HOST:-localhost}"
+JANUSGRAPH_PORT="${JANUSGRAPH_PORT:-8182}"
+OLLAMA_HOST="${OLLAMA_HOST:-http://localhost:11434}"
+NODE_ENV="${NODE_ENV:-development}"
+PORT=${PORT:-3000}
 EOF
 
 # Install backend dependencies
