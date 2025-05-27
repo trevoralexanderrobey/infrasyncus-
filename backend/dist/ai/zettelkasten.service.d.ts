@@ -1,5 +1,6 @@
-import { PrismaService } from '../prisma/prisma.service';
-import { OllamaService } from './ollama.service';
+import { PrismaService } from "../prisma/prisma.service";
+import { OllamaService } from "./ollama.service";
+import { EnhancedSearchResponse, WebSearchService } from "./web-search.service";
 export interface NetworkNode {
     id: string;
     label: string;
@@ -39,7 +40,8 @@ export interface TextNetworkAnalysis {
 export declare class ZettelkastenService {
     private readonly prisma;
     private readonly ollamaService;
-    constructor(prisma: PrismaService, ollamaService: OllamaService);
+    private readonly webSearchService;
+    constructor(prisma: PrismaService, ollamaService: OllamaService, webSearchService: WebSearchService);
     getAllNotes(): Promise<any[]>;
     createAtomicNote(content: string, tags?: string[], createdAt?: string): Promise<any>;
     createBidirectionalLink(noteId1: string, noteId2: string): Promise<any>;
@@ -53,6 +55,21 @@ export declare class ZettelkastenService {
     generateConceptSuggestions(domain?: string): Promise<any>;
     generateKnowledgeInsights(): Promise<any>;
     analyzeTextWithAI(text: string, useAI?: boolean): Promise<any>;
+    searchAndCreateNotes(query: string, context?: string): Promise<{
+        searchResults: EnhancedSearchResponse;
+        createdNotes: any[];
+    }>;
+    enrichExistingNote(noteId: string, domain?: string): Promise<{
+        originalNote: any;
+        enrichmentResults: EnhancedSearchResponse;
+        connections: any[];
+    }>;
+    fillKnowledgeGapsWithSearch(gapDescription: string): Promise<{
+        searchResults: EnhancedSearchResponse;
+        suggestedConnections: any[];
+    }>;
+    findCurrentInformation(concept: string, timeframe?: "recent" | "latest"): Promise<EnhancedSearchResponse>;
+    private findPotentialConnections;
     suggestRelatedNotes(noteId: string): Promise<string[]>;
     analyzeTextIncremental(text: string, previousAnalysis?: any): Promise<TextNetworkAnalysis>;
     importFromFile(content: string, fileName: string): Promise<any[]>;
@@ -67,7 +84,7 @@ export declare class ZettelkastenService {
     getConceptNeighborhood(concept: string, depth?: number): Promise<any>;
     getConceptCentrality(): Promise<any[]>;
     detectKnowledgeGaps(): Promise<any[]>;
-    getTemporalEvolution(timeframe?: 'day' | 'week' | 'month'): Promise<any[]>;
+    getTemporalEvolution(timeframe?: "day" | "week" | "month"): Promise<any[]>;
     findSimilarConcepts(concept: string, limit?: number): Promise<any[]>;
     getEnhancedVisualizationData(): Promise<any>;
     private preprocessText;

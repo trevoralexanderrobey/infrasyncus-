@@ -14,8 +14,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
-const auth_service_1 = require("./auth.service");
 const jwt_1 = require("@nestjs/jwt");
+const auth_service_1 = require("./auth.service");
 let AuthController = class AuthController {
     constructor(authService, jwtService) {
         this.authService = authService;
@@ -37,7 +37,17 @@ let AuthController = class AuthController {
         };
     }
     async register({ email, password, name }) {
-        return this.authService.createUser({ email, password, name });
+        const user = await this.authService.createUser({ email, password, name });
+        const payload = { sub: user.id, email: user.email };
+        const token = this.jwtService.sign(payload);
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name
+            },
+            token
+        };
     }
 };
 exports.AuthController = AuthController;

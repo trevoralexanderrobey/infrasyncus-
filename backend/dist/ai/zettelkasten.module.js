@@ -8,18 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ZettelkastenModule = void 0;
 const common_1 = require("@nestjs/common");
-const zettelkasten_service_1 = require("./zettelkasten.service");
-const zettelkasten_controller_1 = require("./zettelkasten.controller");
+const graph_module_1 = require("../graph/graph.module");
 const prisma_service_1 = require("../prisma/prisma.service");
 const ollama_service_1 = require("./ollama.service");
-const graph_module_1 = require("../graph/graph.module");
+const web_search_service_1 = require("./web-search.service");
+const zettelkasten_controller_1 = require("./zettelkasten.controller");
+const zettelkasten_service_1 = require("./zettelkasten.service");
 let ZettelkastenModule = class ZettelkastenModule {
 };
 exports.ZettelkastenModule = ZettelkastenModule;
 exports.ZettelkastenModule = ZettelkastenModule = __decorate([
     (0, common_1.Module)({
         imports: [graph_module_1.GraphModule],
-        providers: [zettelkasten_service_1.ZettelkastenService, prisma_service_1.PrismaService, ollama_service_1.OllamaService],
+        providers: [zettelkasten_service_1.ZettelkastenService, prisma_service_1.PrismaService, ollama_service_1.OllamaService, web_search_service_1.WebSearchService],
         controllers: [zettelkasten_controller_1.ZettelkastenController],
         exports: [zettelkasten_service_1.ZettelkastenService]
     })

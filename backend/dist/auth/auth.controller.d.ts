@@ -1,5 +1,5 @@
-import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { AuthService } from './auth.service';
 type LoginDto = {
     email: string;
     password: string;
@@ -22,12 +22,12 @@ export declare class AuthController {
         token: string;
     }>;
     register({ email, password, name }: RegisterDto): Promise<{
-        name: string | null;
-        id: number;
-        createdAt: Date;
-        updatedAt: Date;
-        password: string;
-        email: string;
+        user: {
+            id: number;
+            email: string;
+            name: string;
+        };
+        token: string;
     }>;
 }
 export {};

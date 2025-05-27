@@ -1,6 +1,6 @@
 export interface ModelConfig {
     name: string;
-    type: 'text' | 'code' | 'multimodal';
+    type: "text" | "code" | "multimodal";
     ramUsage: number;
     description: string;
     available: boolean;

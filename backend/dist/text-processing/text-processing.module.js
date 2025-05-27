@@ -8,13 +8,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextProcessingModule = void 0;
 const common_1 = require("@nestjs/common");
+const text_processing_service_1 = require("./text-processing.service");
+const text_processing_controller_1 = require("./text-processing.controller");
+const janusgraph_module_1 = require("../janusgraph/janusgraph.module");
 let TextProcessingModule = class TextProcessingModule {
 };
 exports.TextProcessingModule = TextProcessingModule;
 exports.TextProcessingModule = TextProcessingModule = __decorate([
     (0, common_1.Module)({
-        imports: [],
-        controllers: [],
+        imports: [janusgraph_module_1.JanusGraphModule],
+        controllers: [text_processing_controller_1.TextProcessingController],
+        providers: [text_processing_service_1.TextProcessingService],
+        exports: [text_processing_service_1.TextProcessingService]
     })
 ], TextProcessingModule);
 //# sourceMappingURL=text-processing.module.js.map

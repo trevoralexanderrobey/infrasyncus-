@@ -1,4 +1,4 @@
-import { ZettelkastenService, TextNetworkAnalysis } from './zettelkasten.service';
+import { TextNetworkAnalysis, ZettelkastenService } from "./zettelkasten.service";
 export declare class ZettelkastenController {
     private readonly zettelkastenService;
     constructor(zettelkastenService: ZettelkastenService);
@@ -11,7 +11,7 @@ export declare class ZettelkastenController {
     analyzeText(text: string, password: string): Promise<TextNetworkAnalysis>;
     analyzeTextIncremental(text: string, previousAnalysis: any, password: string): Promise<TextNetworkAnalysis>;
     importFile(content: string, fileName: string, password: string): Promise<any[]>;
-    exportGraph(text: string, format: 'json' | 'gexf' | 'csv', password: string): Promise<string | TextNetworkAnalysis | {
+    exportGraph(text: string, format: "json" | "gexf" | "csv", password: string): Promise<string | TextNetworkAnalysis | {
         nodes: string;
         edges: string;
     }>;
@@ -26,7 +26,7 @@ export declare class ZettelkastenController {
     getConceptNeighborhood(concept: string, depth: string, password: string): Promise<any>;
     getConceptCentrality(password: string): Promise<any[]>;
     detectKnowledgeGaps(password: string): Promise<any[]>;
-    getTemporalEvolution(timeframe: 'day' | 'week' | 'month', password: string): Promise<any[]>;
+    getTemporalEvolution(timeframe: "day" | "week" | "month", password: string): Promise<any[]>;
     findSimilarConcepts(concept: string, limit: string, password: string): Promise<any[]>;
     getEnhancedVisualization(password: string): Promise<any>;
     getAvailableModels(password: string): Promise<any[]>;
@@ -36,6 +36,20 @@ export declare class ZettelkastenController {
     suggestConcepts(domain: string, password: string): Promise<any>;
     generateInsights(password: string): Promise<any>;
     analyzeTextEnhanced(text: string, useAI: boolean, password: string): Promise<any>;
+    searchAndCreateNotes(query: string, context: string, password: string): Promise<{
+        searchResults: import("./web-search.service").EnhancedSearchResponse;
+        createdNotes: any[];
+    }>;
+    enrichNote(noteId: string, domain: string, password: string): Promise<{
+        originalNote: any;
+        enrichmentResults: import("./web-search.service").EnhancedSearchResponse;
+        connections: any[];
+    }>;
+    fillKnowledgeGaps(gapDescription: string, password: string): Promise<{
+        searchResults: import("./web-search.service").EnhancedSearchResponse;
+        suggestedConnections: any[];
+    }>;
+    getCurrentInformation(concept: string, timeframe: "recent" | "latest", password: string): Promise<import("./web-search.service").EnhancedSearchResponse>;
     private generateGEXF;
     private generateCSV;
 }
